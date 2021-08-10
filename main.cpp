@@ -22,7 +22,9 @@ public:
 	);
 
 	m_pixels = new Uint32[k_windowHeight * k_windowWidth];
-	memset(m_pixels, 255, k_windowHeight * k_windowWidth * sizeof(Uint32));
+	for (int i = 0; i < k_windowHeight * k_windowWidth; i++) {
+	    m_pixels[i] = 0;
+	}
 
 	mainLoop();
     }
@@ -38,6 +40,8 @@ private:
     SDL_Texture* m_texture;
     Uint32* m_pixels;
     bool m_leftMouseButtonDown;
+    int m_lastMouseX = -1;
+    int m_lastMouseY = -1;
 
     void initSDL()
     {
@@ -77,6 +81,49 @@ private:
 	}
     }
 
+    void drawPixel(int x, int y)
+    {
+	if (!((0 <= y) && (y < k_windowHeight))) {
+	    return;
+	}
+	if (!((0 <= x) && (x < k_windowWidth))) {
+	    return;
+	}
+	m_pixels[y * k_windowWidth + x] = 0xffffffff;
+    }
+
+    void stampCircle(int x, int y, int radius)
+    {
+	for (int dx = -radius; dx <= radius; dx++) {
+	    for (int dy = -radius; dy <= radius; dy++) {
+		if (dx * dx + dy * dy <= radius * radius) {
+		    drawPixel(x + dx, y + dy);
+		}
+	    }
+	}
+    }
+
+    void drawLine(int x1, int y1, int x2, int y2, int radius)
+    {
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+	if (dx == 0 && dy == 0) {
+	    stampCircle(x1, y1, radius);
+	    return;
+	}
+	if (std::abs(dx) > std::abs(dy)) {
+	    for (int x = std::min(x1, x2); x <= std::max(x1, x2); x++) {
+		float y = y1 + std::round(static_cast<float>(x - x1) * dy / dx);
+		stampCircle(x, static_cast<int>(y), radius);
+	    }
+	} else {
+	    for (int y = std::min(y1, y2); y <= std::max(y1, y2); y++) {
+		float x = x1 + std::round(static_cast<float>(y - y1) * dx / dy);
+		stampCircle(static_cast<int>(x), y, radius);
+	    }
+	}
+    }
+
     void mainLoop()
     {
 	while (true) {
@@ -94,16 +141,25 @@ private:
 		    if (event.button.button == SDL_BUTTON_LEFT) {
 			m_leftMouseButtonDown = false;
 		    }
+		    break;
 		case SDL_MOUSEBUTTONDOWN:
 		    if (event.button.button == SDL_BUTTON_LEFT) {
 			m_leftMouseButtonDown = true;
+			m_lastMouseX = -1;
+			m_lastMouseY = -1;
 		    }
+		    break;
 		case SDL_MOUSEMOTION:
 		    if (m_leftMouseButtonDown) {
 			int mouseX = event.motion.x;
 			int mouseY = event.motion.y;
-			m_pixels[mouseY * k_windowWidth + mouseX] = 0;
+			if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
+			    drawLine(m_lastMouseX, m_lastMouseY, mouseX, mouseY, 5);
+			}
+			m_lastMouseX = mouseX;
+			m_lastMouseY = mouseY;
 		    }
+		    break;
 		}
 	    }
 
