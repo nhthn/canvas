@@ -49,8 +49,6 @@ private:
 	    std::cerr << "Couldn't initialize SDL: " << SDL_GetError() << std::endl;
 	    exit(1);
 	}
-
-	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
     }
 
     void initWindow()
