@@ -14,7 +14,7 @@ if(APPLE)
     link_directories(/usr/local/lib)
 endif()
 
-file(GLOB canvas_files *.cpp)
+file(GLOB canvas_files src/*.cpp)
 add_executable(canvas ${canvas_files})
 
 target_link_libraries(
