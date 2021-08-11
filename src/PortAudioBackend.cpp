@@ -64,7 +64,7 @@ void PortAudioBackend::handle_error(PaError error) {
         return;
     }
     std::cerr << "PortAudio error, exiting :(" << std::endl;
-    throw std::runtime_error("PortAudio error");
+    exit(1);
 }
 
 int PortAudioBackend::find_device() {
