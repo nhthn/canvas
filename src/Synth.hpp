@@ -1,17 +1,19 @@
 #pragma once
 #include <cmath>
 #include <memory>
+#include <vector>
 #include "RingBuffer.hpp"
 
-class Saw {
+class Oscillator {
 public:
-    Saw(float frequency);
-
+    Oscillator(float frequency);
     float process();
+    void setAmplitude(float amplitude) { m_amplitude = amplitude; };
 
 private:
     float m_phase = 0;
     const float m_frequency;
+    float m_amplitude = 1.0;
 };
 
 class Synth {
@@ -28,7 +30,8 @@ public:
 
 private:
     std::shared_ptr<RingBuffer<uint32_t>> m_ringBuffer;
-    Saw m_saw_left;
-    Saw m_saw_right;
+    std::unique_ptr<uint32_t[]> m_pixels;
+    std::vector<std::unique_ptr<Oscillator>> m_oscillators;
+    float m_position = 0;
+    float m_speedInPixelsPerSecond = 100;
 };
-

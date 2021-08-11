@@ -7,7 +7,7 @@ include_directories(
     third_party/portaudio/include/
     third_party/portaudio/src/common/
 )
-SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD 14)
 
 if(APPLE)
     include_directories(/usr/local/include)
