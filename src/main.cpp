@@ -153,45 +153,48 @@ private:
 	}
     }
 
+    void handleEvents() {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+	    switch (event.type) {
+	    case SDL_QUIT:
+		exit(0);
+		break;
+	    case SDL_MOUSEBUTTONUP:
+		if (event.button.button == SDL_BUTTON_LEFT) {
+		    m_leftMouseButtonDown = false;
+		}
+		break;
+	    case SDL_MOUSEBUTTONDOWN:
+		if (event.button.button == SDL_BUTTON_LEFT) {
+		    m_leftMouseButtonDown = true;
+		    m_lastMouseX = -1;
+		    m_lastMouseY = -1;
+		}
+		break;
+	    case SDL_MOUSEMOTION:
+		if (m_leftMouseButtonDown) {
+		    int mouseX = event.motion.x;
+		    int mouseY = event.motion.y;
+		    if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
+			drawLine(m_lastMouseX, m_lastMouseY, mouseX, mouseY, 5);
+		    }
+		    m_lastMouseX = mouseX;
+		    m_lastMouseY = mouseY;
+		}
+		break;
+	    }
+	}
+    }
+
     void mainLoop()
     {
 	while (true) {
 	    SDL_UpdateTexture(m_texture, nullptr, m_pixels, k_windowWidth * sizeof(Uint32));
+	    handleEvents();
 
 	    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	    SDL_RenderClear(m_renderer);
-	    SDL_Event event;
-	    while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-		case SDL_QUIT:
-		    exit(0);
-		    break;
-		case SDL_MOUSEBUTTONUP:
-		    if (event.button.button == SDL_BUTTON_LEFT) {
-			m_leftMouseButtonDown = false;
-		    }
-		    break;
-		case SDL_MOUSEBUTTONDOWN:
-		    if (event.button.button == SDL_BUTTON_LEFT) {
-			m_leftMouseButtonDown = true;
-			m_lastMouseX = -1;
-			m_lastMouseY = -1;
-		    }
-		    break;
-		case SDL_MOUSEMOTION:
-		    if (m_leftMouseButtonDown) {
-			int mouseX = event.motion.x;
-			int mouseY = event.motion.y;
-			if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
-			    drawLine(m_lastMouseX, m_lastMouseY, mouseX, mouseY, 5);
-			}
-			m_lastMouseX = mouseX;
-			m_lastMouseY = mouseY;
-		    }
-		    break;
-		}
-	    }
-
 	    sendImageToAudioThread();
 
 	    SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
