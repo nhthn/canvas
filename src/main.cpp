@@ -72,7 +72,7 @@ private:
     float m_position;
     float m_speedInPixelsPerSecond = 100;
 
-    float m_overallGain = 0.1;
+    float m_overallGain = 0.05;
 
     void initSDL()
     {

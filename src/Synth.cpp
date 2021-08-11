@@ -17,13 +17,18 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
         int integerPhase = m_phase * 2048;
         float frac = m_phase * 2048 - integerPhase;
         int integerPhase2 = (integerPhase + 1) % 2048;
+        float amplitude = (
+            m_amplitude * (1 - i / static_cast<float>(blockSize))
+            + m_targetAmplitude * i / static_cast<float>(blockSize)
+        );
         float outSample = (
             k_sineTable2048[integerPhase] * (1 - frac)
             + k_sineTable2048[integerPhase2] * frac
-        ) * m_amplitude;
+        ) * amplitude;
         out1[i] += outSample;
         out2[i] += outSample;
     }
+    m_amplitude = m_targetAmplitude;
 }
 
 Synth::Synth(std::shared_ptr<RingBuffer<float>> ringBuffer)
@@ -48,7 +53,7 @@ void Synth::process(
     if (count > 0) {
         int numOscillators = std::min(count, static_cast<int>(m_oscillators.size()));
         for (int i = 0; i < numOscillators; i++) {
-            m_oscillators[i]->setAmplitude(m_ringBuffer->getOutputBuffer()[i]);
+            m_oscillators[i]->setTargetAmplitude(m_ringBuffer->getOutputBuffer()[i]);
         }
     }
 
