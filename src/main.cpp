@@ -8,6 +8,9 @@
 constexpr int k_windowWidth = 640;
 constexpr int k_windowHeight = 480;
 
+constexpr int k_imageWidth = 640;
+constexpr int k_imageHeight = 256;
+
 int nextPowerOfTwo(int x) {
     int power = 1;
     while (power < x) {
@@ -35,12 +38,12 @@ public:
 	    m_renderer,
 	    SDL_PIXELFORMAT_ARGB8888,
 	    SDL_TEXTUREACCESS_STATIC,
-	    k_windowWidth,
-	    k_windowHeight
+	    k_imageWidth,
+	    k_imageHeight
 	);
 
-	m_pixels = new Uint32[k_windowHeight * k_windowWidth];
-	for (int i = 0; i < k_windowHeight * k_windowWidth; i++) {
+	m_pixels = new Uint32[k_imageHeight * k_imageWidth];
+	for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
 	    m_pixels[i] = 0;
 	}
     }
@@ -112,13 +115,13 @@ private:
 
     void drawPixel(int x, int y)
     {
-	if (!((0 <= y) && (y < k_windowHeight))) {
+	if (!((0 <= y) && (y < k_imageHeight))) {
 	    return;
 	}
-	if (!((0 <= x) && (x < k_windowWidth))) {
+	if (!((0 <= x) && (x < k_imageWidth))) {
 	    return;
 	}
-	m_pixels[y * k_windowWidth + x] = 0xffffffff;
+	m_pixels[y * k_imageWidth + x] = 0xffffffff;
     }
 
     void stampCircle(int x, int y, int radius)
@@ -174,8 +177,14 @@ private:
 		break;
 	    case SDL_MOUSEMOTION:
 		if (m_leftMouseButtonDown) {
-		    int mouseX = event.motion.x;
-		    int mouseY = event.motion.y;
+		    int mouseX = (
+			static_cast<float>(event.motion.x)
+			* k_imageWidth / k_windowWidth
+		    );
+		    int mouseY = (
+			static_cast<float>(event.motion.y)
+			* k_imageHeight / k_windowHeight
+		    );
 		    if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
 			drawLine(m_lastMouseX, m_lastMouseY, mouseX, mouseY, 5);
 		    }
@@ -190,12 +199,12 @@ private:
     void mainLoop()
     {
 	while (true) {
-	    SDL_UpdateTexture(m_texture, nullptr, m_pixels, k_windowWidth * sizeof(Uint32));
+	    SDL_UpdateTexture(m_texture, nullptr, m_pixels, k_imageWidth * sizeof(Uint32));
 	    handleEvents();
 
 	    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	    SDL_RenderClear(m_renderer);
-	    sendImageToAudioThread();
+	    sendAmplitudesToAudioThread();
 
 	    SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
 
@@ -205,21 +214,21 @@ private:
 	    SDL_Delay(delayInMilliseconds);
 
 	    m_position += m_speedInPixelsPerSecond * delayInMilliseconds / 1000;
-	    while (m_position > k_windowWidth) {
-		m_position -= k_windowWidth;
+	    while (m_position > k_imageWidth) {
+		m_position -= k_imageWidth;
 	    }
 	}
     }
 
-    void sendImageToAudioThread()
+    void sendAmplitudesToAudioThread()
     {
 	int position = m_position;
-	float amplitudes[k_windowHeight];
-	for (int i = 0; i < k_windowHeight; i++) {
-	    amplitudes[i] = ((m_pixels[k_windowWidth * (k_windowHeight - 1 - i) + position] & 0x0000ff00) >> 8) / 255.0 * m_overallGain;
+	float amplitudes[k_imageHeight];
+	for (int i = 0; i < k_imageHeight; i++) {
+	    amplitudes[i] = ((m_pixels[k_imageWidth * (k_imageHeight - 1 - i) + position] & 0x0000ff00) >> 8) / 255.0 * m_overallGain;
 	}
 
-	m_ringBuffer->write(amplitudes, k_windowHeight);
+	m_ringBuffer->write(amplitudes, k_imageHeight);
     }
 };
 
