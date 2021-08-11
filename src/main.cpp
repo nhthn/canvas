@@ -1,6 +1,8 @@
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+
+#include "audio.hpp"
+#include "portaudio_backend.hpp"
 
 constexpr int k_windowWidth = 640;
 constexpr int k_windowHeight = 480;
@@ -170,6 +172,10 @@ private:
 };
 
 int main(int argc, char** argv) {
+    World world;
+    PortAudioBackend backend(&world);
+    backend.run();
+    backend.end();
     App app;
     return 0;
 }
