@@ -16,7 +16,7 @@ Synth::Synth(std::shared_ptr<RingBuffer<uint32_t>> ringBuffer)
     , m_pixels(std::make_unique<uint32_t[]>(640 * 480))
 {
     for (int i = 0; i < 256; i++) {
-        float frequency = 20 * std::pow(20e3 / 20, i / 256.0f);
+        float frequency = 55 * std::pow(2, i / 24.0);
         m_oscillators.push_back(
             std::make_unique<Oscillator>(frequency)
         );
