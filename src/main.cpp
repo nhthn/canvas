@@ -1,8 +1,8 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#include "audio.hpp"
-#include "portaudio_backend.hpp"
+#include "Synth.hpp"
+#include "PortAudioBackend.hpp"
 
 constexpr int k_windowWidth = 640;
 constexpr int k_windowHeight = 480;

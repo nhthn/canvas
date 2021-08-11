@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include "portaudio.h"
-#include "audio.hpp"
+#include "Synth.hpp"
 
 class PortAudioBackend {
 public:

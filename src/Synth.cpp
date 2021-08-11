@@ -1,5 +1,5 @@
 #include <cmath>
-#include "audio.hpp"
+#include "Synth.hpp"
 
 Saw::Saw(float frequency)
 : m_frequency(frequency)

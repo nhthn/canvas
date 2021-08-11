@@ -1,4 +1,4 @@
-#include "portaudio_backend.hpp"
+#include "PortAudioBackend.hpp"
 
 PortAudioBackend::PortAudioBackend(Synth* synth)
 : m_synth(synth)
