@@ -4,6 +4,7 @@
 #include <vector>
 #include "RingBuffer.hpp"
 
+
 class Oscillator {
 public:
     Oscillator(float frequency);

@@ -1,6 +1,11 @@
 #include <cmath>
 #include "Synth.hpp"
 
+
+float k_sineTable2048[2048] = {
+#include "sine_table_2048.txt"
+};
+
 Oscillator::Oscillator(float frequency)
 : m_frequency(frequency)
 {
@@ -11,7 +16,13 @@ float Oscillator::process() {
     while (m_phase > 1.0) {
         m_phase -= 1.0;
     }
-    return std::sin(m_phase * 2 * 3.141592653589793238) * m_amplitude;
+    int integerPhase = m_phase * 2048;
+    float frac = m_phase * 2048 - integerPhase;
+    int integerPhase2 = (integerPhase + 1) % 2048;
+    return (
+        k_sineTable2048[integerPhase] * (1 - frac)
+        + k_sineTable2048[integerPhase2] * frac
+    ) * m_amplitude;
 }
 
 Synth::Synth(std::shared_ptr<RingBuffer<float>> ringBuffer)
@@ -39,7 +50,6 @@ void Synth::process(
             m_oscillators[i]->setAmplitude(m_ringBuffer->getOutputBuffer()[i]);
         }
     }
-    m_position += m_speedInPixelsPerSecond * frame_count / 48000.f;
 
     for (int j = 0; j < frame_count; j++) {
         output_buffer[0][j] = 0;
