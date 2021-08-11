@@ -52,8 +52,9 @@ void Synth::process(
         float amplitude = ((m_pixels[640 * (480 - i) + position] & 0x0000ff00) >> 8) / 256.0;
         oscillator->setAmplitude(amplitude);
         for (int j = 0; j < frame_count; j++) {
-            output_buffer[0][j] += oscillator->process();
-            output_buffer[1][j] += oscillator->process();
+            float sample = oscillator->process();
+            output_buffer[0][j] += sample;
+            output_buffer[1][j] += sample;
         }
         i += 1;
     }
