@@ -172,8 +172,8 @@ private:
 };
 
 int main(int argc, char** argv) {
-    World world;
-    PortAudioBackend audioBackend(&world);
+    Synth synth;
+    PortAudioBackend audioBackend(&synth);
     audioBackend.run();
     App app;
     return 0;

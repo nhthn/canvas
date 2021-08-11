@@ -1,7 +1,7 @@
 #include "portaudio_backend.hpp"
 
-PortAudioBackend::PortAudioBackend(World* world)
-: m_world(world)
+PortAudioBackend::PortAudioBackend(Synth* synth)
+: m_synth(synth)
 {
 }
 
@@ -56,7 +56,7 @@ const float** input_buffer,
     float** output_buffer,
     int frame_count
 ) {
-    m_world->process(2, 2, input_buffer, output_buffer, frame_count);
+    m_synth->process(2, 2, input_buffer, output_buffer, frame_count);
 }
 
 void PortAudioBackend::handle_error(PaError error) {

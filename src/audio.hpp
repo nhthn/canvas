@@ -12,9 +12,9 @@ private:
     const float m_frequency;
 };
 
-class World {
+class Synth {
 public:
-    World();
+    Synth();
 
     void process(
         int input_channels,

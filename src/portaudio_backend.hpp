@@ -5,7 +5,7 @@
 
 class PortAudioBackend {
 public:
-    PortAudioBackend(World* world);
+    PortAudioBackend(Synth* synth);
 
     void run();
     void end();
@@ -19,7 +19,7 @@ private:
     PaStream* m_stream;
     const float m_sample_rate = 48000.0f;
     const int m_block_size = 256;
-    World* m_world;
+    Synth* m_synth;
 
     void handle_error(PaError error);
     int find_device();

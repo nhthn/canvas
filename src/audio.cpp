@@ -15,12 +15,12 @@ float Saw::process() {
     return m_phase - 0.5;
 }
 
-World::World()
+Synth::Synth()
 : m_saw_left(440), m_saw_right(441)
 {
 }
 
-void World::process(
+void Synth::process(
     int input_channels,
     int output_channels,
     const float** input_buffer,
