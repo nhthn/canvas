@@ -8,7 +8,7 @@
 class Oscillator {
 public:
     Oscillator(float frequency);
-    float process();
+    void processAdd(float* out1, float* out2, int blockSize);
     void setAmplitude(float amplitude) { m_amplitude = amplitude; };
 
 private:

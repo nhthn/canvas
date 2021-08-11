@@ -11,18 +11,19 @@ Oscillator::Oscillator(float frequency)
 {
 }
 
-float Oscillator::process() {
-    m_phase += m_frequency / 48000.0;
-    while (m_phase > 1.0) {
-        m_phase -= 1.0;
+void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
+    for (int i = 0; i < blockSize; i++) {
+        m_phase = std::fmod(m_phase + m_frequency / 48000.0, 1.0);
+        int integerPhase = m_phase * 2048;
+        float frac = m_phase * 2048 - integerPhase;
+        int integerPhase2 = (integerPhase + 1) % 2048;
+        float outSample = (
+            k_sineTable2048[integerPhase] * (1 - frac)
+            + k_sineTable2048[integerPhase2] * frac
+        ) * m_amplitude;
+        out1[i] += outSample;
+        out2[i] += outSample;
     }
-    int integerPhase = m_phase * 2048;
-    float frac = m_phase * 2048 - integerPhase;
-    int integerPhase2 = (integerPhase + 1) % 2048;
-    return (
-        k_sineTable2048[integerPhase] * (1 - frac)
-        + k_sineTable2048[integerPhase2] * frac
-    ) * m_amplitude;
 }
 
 Synth::Synth(std::shared_ptr<RingBuffer<float>> ringBuffer)
@@ -56,13 +57,7 @@ void Synth::process(
         output_buffer[1][j] = 0;
     }
 
-    int i = 0;
     for (auto& oscillator : m_oscillators) {
-        for (int j = 0; j < frame_count; j++) {
-            float sample = oscillator->process();
-            output_buffer[0][j] += sample;
-            output_buffer[1][j] += sample;
-        }
-        i += 1;
+        oscillator->processAdd(output_buffer[0], output_buffer[1], frame_count);
     }
 }

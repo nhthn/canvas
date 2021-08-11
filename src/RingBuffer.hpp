@@ -17,25 +17,21 @@ public:
 
 private:
     const int m_ringBufferSize;
-    const int m_scratchBufferSize;
     const int m_outputBufferSize;
 
     int m_writePos = 0;
 
     std::unique_ptr<PaUtilRingBuffer> m_ringBuffer;
     std::unique_ptr<T[]> m_ringBufferData;
-    std::unique_ptr<T[]> m_scratchBuffer;
     std::shared_ptr<T[]> m_outputBuffer;
 };
 
 template <class T>
 RingBuffer<T>::RingBuffer(int size)
     : m_ringBufferSize(size)
-    , m_scratchBufferSize(size)
     , m_outputBufferSize(size)
     , m_ringBuffer(new PaUtilRingBuffer)
     , m_ringBufferData(new T[m_ringBufferSize])
-    , m_scratchBuffer(new T[m_scratchBufferSize])
     , m_outputBuffer(new T[m_outputBufferSize])
 {
     ring_buffer_size_t receivedRingBufferSize = PaUtil_InitializeRingBuffer(
@@ -48,9 +44,6 @@ RingBuffer<T>::RingBuffer(int size)
 
     for (int i = 0; i < m_ringBufferSize; i++) {
         m_ringBufferData[i] = 0;
-    }
-    for (int i = 0; i < m_scratchBufferSize; i++) {
-        m_scratchBuffer[i] = 0;
     }
     for (int i = 0; i < m_outputBufferSize; i++) {
         m_outputBuffer[i] = 0;
@@ -71,10 +64,7 @@ template <class T>
 int RingBuffer<T>::read()
 {
     int availableFrames = PaUtil_GetRingBufferReadAvailable(m_ringBuffer.get());
-    int readSamples = std::min(availableFrames, m_scratchBufferSize);
-    int count = PaUtil_ReadRingBuffer(m_ringBuffer.get(), m_scratchBuffer.get(), readSamples);
-    for (int i = 0; i < count; i++) {
-        m_outputBuffer.get()[i] = m_scratchBuffer.get()[i];
-    }
+    int readSamples = std::min(availableFrames, m_outputBufferSize);
+    int count = PaUtil_ReadRingBuffer(m_ringBuffer.get(), m_outputBuffer.get(), readSamples);
     return count;
 }
