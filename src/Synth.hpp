@@ -18,7 +18,7 @@ private:
 
 class Synth {
 public:
-    Synth(std::shared_ptr<RingBuffer<uint32_t>>(ringBuffer));
+    Synth(std::shared_ptr<RingBuffer<float>>(ringBuffer));
 
     void process(
         int input_channels,
@@ -29,7 +29,7 @@ public:
     );
 
 private:
-    std::shared_ptr<RingBuffer<uint32_t>> m_ringBuffer;
+    std::shared_ptr<RingBuffer<float>> m_ringBuffer;
     std::unique_ptr<uint32_t[]> m_pixels;
     std::vector<std::unique_ptr<Oscillator>> m_oscillators;
     float m_position = 0;

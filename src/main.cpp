@@ -20,8 +20,8 @@ class App {
 public:
     App()
 	: m_ringBuffer(
-	    std::make_shared<RingBuffer<uint32_t>>(
-		nextPowerOfTwo(k_windowWidth * k_windowHeight)
+	    std::make_shared<RingBuffer<float>>(
+		nextPowerOfTwo(k_windowHeight)
 	    )
 	)
 	, m_synth(m_ringBuffer)
@@ -57,7 +57,7 @@ public:
     }
 
 private:
-    std::shared_ptr<RingBuffer<uint32_t>> m_ringBuffer;
+    std::shared_ptr<RingBuffer<float>> m_ringBuffer;
     Synth m_synth;
     PortAudioBackend m_audioBackend;
 
@@ -68,6 +68,11 @@ private:
     bool m_leftMouseButtonDown;
     int m_lastMouseX = -1;
     int m_lastMouseY = -1;
+
+    float m_position;
+    float m_speedInPixelsPerSecond = 100;
+
+    float m_overallGain = 0.1;
 
     void initSDL()
     {
@@ -192,13 +197,26 @@ private:
 	    SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
 
 	    SDL_RenderPresent(m_renderer);
-	    SDL_Delay(16);
+
+	    int delayInMilliseconds = 16;
+	    SDL_Delay(delayInMilliseconds);
+
+	    m_position += m_speedInPixelsPerSecond * delayInMilliseconds / 1000;
+	    while (m_position > k_windowWidth) {
+		m_position -= k_windowWidth;
+	    }
 	}
     }
 
     void sendImageToAudioThread()
     {
-	m_ringBuffer->write(m_pixels, k_windowWidth * k_windowHeight);
+	int position = m_position;
+	float amplitudes[k_windowHeight];
+	for (int i = 0; i < k_windowHeight; i++) {
+	    amplitudes[i] = ((m_pixels[k_windowWidth * (k_windowHeight - 1 - i) + position] & 0x0000ff00) >> 8) / 255.0 * m_overallGain;
+	}
+
+	m_ringBuffer->write(amplitudes, k_windowHeight);
     }
 };
 
