@@ -43,14 +43,6 @@ void PortAudioBackend::run() {
     );
 
     handle_error(Pa_StartStream(m_stream));
-
-    int sleep_time_in_milliseconds = 250;
-    std::cout << std::endl;
-    while (true) {
-        Pa_Sleep(sleep_time_in_milliseconds);
-        float cpu_load = Pa_GetStreamCpuLoad(m_stream);
-        std::cout << "\x1b[1A\x1b[K" << "CPU: " << 100 * cpu_load << "%" << std::endl;
-    }
 }
 
 void PortAudioBackend::end() {

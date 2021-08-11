@@ -173,9 +173,8 @@ private:
 
 int main(int argc, char** argv) {
     World world;
-    PortAudioBackend backend(&world);
-    backend.run();
-    backend.end();
+    PortAudioBackend audioBackend(&world);
+    audioBackend.run();
     App app;
     return 0;
 }
