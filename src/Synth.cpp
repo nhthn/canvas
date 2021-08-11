@@ -15,8 +15,10 @@ float Saw::process() {
     return m_phase - 0.5;
 }
 
-Synth::Synth()
-: m_saw_left(440), m_saw_right(441)
+Synth::Synth(std::shared_ptr<RingBuffer<uint32_t>> ringBuffer)
+    : m_ringBuffer(ringBuffer)
+    , m_saw_left(440)
+    , m_saw_right(441)
 {
 }
 

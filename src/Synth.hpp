@@ -1,5 +1,7 @@
 #pragma once
 #include <cmath>
+#include <memory>
+#include "RingBuffer.hpp"
 
 class Saw {
 public:
@@ -14,7 +16,7 @@ private:
 
 class Synth {
 public:
-    Synth();
+    Synth(std::shared_ptr<RingBuffer<uint32_t>>(ringBuffer));
 
     void process(
         int input_channels,
@@ -25,6 +27,7 @@ public:
     );
 
 private:
+    std::shared_ptr<RingBuffer<uint32_t>> m_ringBuffer;
     Saw m_saw_left;
     Saw m_saw_right;
 };

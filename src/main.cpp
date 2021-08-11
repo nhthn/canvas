@@ -3,13 +3,29 @@
 
 #include "Synth.hpp"
 #include "PortAudioBackend.hpp"
+#include "RingBuffer.hpp"
 
 constexpr int k_windowWidth = 640;
 constexpr int k_windowHeight = 480;
 
+int nextPowerOfTwo(int x) {
+    int power = 1;
+    while (power < x) {
+	power *= 2;
+    }
+    return power;
+}
+
 class App {
 public:
     App()
+	: m_ringBuffer(
+	    std::make_shared<RingBuffer<uint32_t>>(
+		nextPowerOfTwo(k_windowWidth * k_windowHeight)
+	    )
+	)
+	, m_synth(m_ringBuffer)
+	, m_audioBackend(&m_synth)
     {
 	initSDL();
 	initWindow();
@@ -27,8 +43,6 @@ public:
 	for (int i = 0; i < k_windowHeight * k_windowWidth; i++) {
 	    m_pixels[i] = 0;
 	}
-
-	mainLoop();
     }
 
     ~App()
@@ -36,7 +50,17 @@ public:
 	delete m_pixels;
     }
 
+    void run()
+    {
+	m_audioBackend.run();
+	mainLoop();
+    }
+
 private:
+    std::shared_ptr<RingBuffer<uint32_t>> m_ringBuffer;
+    Synth m_synth;
+    PortAudioBackend m_audioBackend;
+
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
     SDL_Texture* m_texture;
@@ -163,18 +187,23 @@ private:
 		}
 	    }
 
+	    sendImageToAudioThread();
+
 	    SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
 
 	    SDL_RenderPresent(m_renderer);
 	    SDL_Delay(16);
 	}
     }
+
+    void sendImageToAudioThread()
+    {
+	m_ringBuffer->write(m_pixels, k_windowWidth * k_windowHeight);
+    }
 };
 
 int main(int argc, char** argv) {
-    Synth synth;
-    PortAudioBackend audioBackend(&synth);
-    audioBackend.run();
     App app;
+    app.run();
     return 0;
 }
