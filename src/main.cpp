@@ -5,8 +5,8 @@
 #include "PortAudioBackend.hpp"
 #include "RingBuffer.hpp"
 
-constexpr int k_windowWidth = 640;
-constexpr int k_windowHeight = 480;
+constexpr int k_windowWidth = 2 * 640;
+constexpr int k_windowHeight = 2 * 480;
 
 constexpr int k_imageWidth = 640;
 constexpr int k_imageHeight = 256;
@@ -199,14 +199,18 @@ private:
     void mainLoop()
     {
 	while (true) {
+	    sendAmplitudesToAudioThread();
 	    SDL_UpdateTexture(m_texture, nullptr, m_pixels, k_imageWidth * sizeof(Uint32));
 	    handleEvents();
 
 	    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	    SDL_RenderClear(m_renderer);
-	    sendAmplitudesToAudioThread();
 
 	    SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
+
+	    SDL_Rect fillRect = { static_cast<int>(static_cast<float>(m_position) * k_windowWidth / k_imageWidth), 0, 2, k_windowHeight };
+	    SDL_SetRenderDrawColor(m_renderer, 0xff, 0xff, 0xff, 0xff);
+	    SDL_RenderFillRect(m_renderer, &fillRect);
 
 	    SDL_RenderPresent(m_renderer);
 
