@@ -1,3 +1,6 @@
 [submodule "third_party/portaudio"]
 	path = third_party/portaudio
 	url = https://github.com/portaudio/portaudio
+[submodule "third_party/nanogui-sdl"]
+	path = third_party/nanogui-sdl
+	url = https://github.com/dalerank/nanogui-sdl/

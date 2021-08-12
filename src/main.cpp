@@ -1,5 +1,31 @@
 #include <iostream>
+
 #include <SDL2/SDL.h>
+
+#include <sdlgui/screen.h>
+#include <sdlgui/window.h>
+#include <sdlgui/layout.h>
+#include <sdlgui/label.h>
+#include <sdlgui/checkbox.h>
+#include <sdlgui/button.h>
+#include <sdlgui/toolbutton.h>
+#include <sdlgui/popupbutton.h>
+#include <sdlgui/combobox.h>
+#include <sdlgui/dropdownbox.h>
+#include <sdlgui/progressbar.h>
+#include <sdlgui/entypo.h>
+#include <sdlgui/messagedialog.h>
+#include <sdlgui/textbox.h>
+#include <sdlgui/slider.h>
+#include <sdlgui/imagepanel.h>
+#include <sdlgui/imageview.h>
+#include <sdlgui/vscrollpanel.h>
+#include <sdlgui/colorwheel.h>
+#include <sdlgui/graph.h>
+#include <sdlgui/tabwidget.h>
+#include <sdlgui/switchbox.h>
+#include <sdlgui/formhelper.h>
+#include <memory>
 
 #include "Synth.hpp"
 #include "PortAudioBackend.hpp"
@@ -19,6 +45,42 @@ int nextPowerOfTwo(int x) {
     return power;
 }
 
+class GUI : public sdlgui::Screen
+{
+public:
+    GUI(SDL_Window* pwindow, int rwidth, int rheight)
+      : sdlgui::Screen(pwindow, sdlgui::Vector2i(rwidth, rheight), "Canvas")
+    {
+        {
+            auto& nwindow = window("Button demo", sdlgui::Vector2i{15, 15})
+                .withLayout<sdlgui::GroupLayout>();
+
+            nwindow.label("Push buttons", "sans-bold")._and()
+                .button("Plain button", [] { std::cout << "pushed!" << std::endl; })
+                .withTooltip("This is plain button tips");
+
+            nwindow.button("Styled", ENTYPO_ICON_ROCKET, [] { std::cout << "pushed!" << std::endl; })
+                .withBackgroundColor(sdlgui::Color(0, 0, 255, 25));
+        }
+
+        performLayout(mSDL_Renderer);
+    }
+
+    virtual bool keyboardEvent(int key, int scancode, int action, int modifiers)
+    {
+        return sdlgui::Screen::keyboardEvent(key, scancode, action, modifiers);
+    }
+
+    virtual void draw(SDL_Renderer* renderer)
+    {
+        sdlgui::Screen::draw(renderer);
+    }
+
+    virtual void drawContents()
+    {
+    }
+};
+
 class App {
 public:
     App()
@@ -33,6 +95,7 @@ public:
 	initSDL();
 	initWindow();
 	initRenderer();
+	initGUI();
 
 	m_texture = SDL_CreateTexture(
 	    m_renderer,
@@ -68,6 +131,8 @@ private:
     SDL_Renderer* m_renderer;
     SDL_Texture* m_texture;
     Uint32* m_pixels;
+    std::unique_ptr<GUI> m_gui;
+
     bool m_leftMouseButtonDown;
     int m_lastMouseX = -1;
     int m_lastMouseY = -1;
@@ -87,7 +152,7 @@ private:
 
     void initWindow()
     {
-	int windowFlags = 0;
+	int windowFlags = SDL_WINDOW_ALLOW_HIGHDPI;
 	m_window = SDL_CreateWindow(
 	    "Canvas",
 	    SDL_WINDOWPOS_UNDEFINED,
@@ -111,6 +176,11 @@ private:
 	    std::cerr << "Failed to create renderer: " << SDL_GetError() << std::endl;
 	    exit(1);
 	}
+    }
+
+    void initGUI()
+    {
+	m_gui = std::make_unique<GUI>(m_window, k_windowWidth, k_windowHeight);
     }
 
     void drawPixel(int x, int y)
@@ -159,6 +229,7 @@ private:
     void handleEvents() {
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
+	    m_gui->onEvent(event);
 	    switch (event.type) {
 	    case SDL_QUIT:
 		exit(0);
@@ -203,6 +274,7 @@ private:
 	    SDL_UpdateTexture(m_texture, nullptr, m_pixels, k_imageWidth * sizeof(Uint32));
 	    handleEvents();
 
+	    SDL_SetRenderDrawBlendMode(m_renderer, SDL_BLENDMODE_BLEND);
 	    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
 	    SDL_RenderClear(m_renderer);
 
@@ -211,6 +283,8 @@ private:
 	    SDL_Rect fillRect = { static_cast<int>(static_cast<float>(m_position) * k_windowWidth / k_imageWidth), 0, 2, k_windowHeight };
 	    SDL_SetRenderDrawColor(m_renderer, 0xff, 0xff, 0xff, 0xff);
 	    SDL_RenderFillRect(m_renderer, &fillRect);
+
+	    m_gui->drawAll();
 
 	    SDL_RenderPresent(m_renderer);
 

@@ -2,27 +2,34 @@ cmake_minimum_required(VERSION 3.19)
 
 project(Canvas)
 
+set(CMAKE_CXX_STANDARD 14)
+
 add_subdirectory(third_party/portaudio)
 include_directories(
     third_party/portaudio/include/
     third_party/portaudio/src/common/
 )
-SET(CMAKE_CXX_STANDARD 14)
-
 if(APPLE)
     include_directories(/usr/local/include)
     link_directories(/usr/local/lib)
 endif()
 
+add_subdirectory(third_party/nanogui-sdl)
+include_directories(
+    third_party/nanogui-sdl
+)
+file(GLOB nanogui_sdl_files
+    third_party/nanogui-sdl/sdlgui/*.cpp
+    third_party/nanogui-sdl/sdlgui/*.c
+)
+
 file(GLOB canvas_files src/*.cpp)
-add_executable(canvas ${canvas_files})
+add_executable(canvas ${canvas_files} ${nanogui_sdl_files})
 
 target_link_libraries(
     canvas
     SDL2
+    SDL2_image
+    SDL2_ttf
     portaudio_static
 )
-
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wpedantic")
-endif()
