@@ -382,8 +382,8 @@ static float tremoloLFO(float phase, int shape)
         return phase >= 0.5 ? 2 - 2 * phase : 2 * phase;
     case 2: // Square
         return phase < 0.5;
-    case 3: // Saw Down
-        return 1 - phase;
+    case 3: // Saw Down -- squaring the signal sounds better
+        return (1 - phase) * (1 - phase);
     case 4: // Saw Up
         return phase;
     }
