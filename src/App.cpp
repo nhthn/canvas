@@ -420,6 +420,23 @@ void App::applyScaleFilter(int root, int scaleClass)
     }
 }
 
+static float tremoloLFO(float phase, int shape)
+{
+    switch (shape) {
+    case 0: // Sine
+        return std::cos(phase * 3.14159265358979 * 2) * 0.5 + 0.5;
+    case 1: // Triangle
+        return phase >= 0.5 ? 2 - 2 * phase : 2 * phase;
+    case 2: // Square
+        return phase < 0.5;
+    case 3: // Saw
+        return 1 - phase;
+    case 4: // Ramp
+        return phase;
+    }
+    return 0;
+}
+
 void App::applyTremolo(float rate, float depth, int shape, float stereo)
 {
     for (int row = 0; row < k_imageHeight; row++) {
@@ -427,8 +444,8 @@ void App::applyTremolo(float rate, float depth, int shape, float stereo)
         float lfoPeriod = std::pow(k_imageWidth, 1 - rate);
         float phaseIncrement = 1 / lfoPeriod;
         for (int column = 0; column < k_imageWidth; column++) {
-            float lfo1 = std::cos(lfoPhase * 3.14159265358979 * 2) * 0.5 + 0.5;
-            float lfo2 = std::cos((lfoPhase + 0.5 * stereo) * 3.14159265358979 * 2) * 0.5 + 0.5;
+            float lfo1 = tremoloLFO(lfoPhase, shape);
+            float lfo2 = tremoloLFO(lfoPhase + 0.5 * stereo, shape);
             lfoPhase += phaseIncrement;
             while (lfoPhase > 1.0) {
                 lfoPhase -= 1.0;
@@ -440,9 +457,9 @@ void App::applyTremolo(float rate, float depth, int shape, float stereo)
             float green = getGreenNormalized(color);
             float blue = getBlueNormalized(color);
 
-            red *= 1 - lfo1 * depth;
-            green *= 1 - (lfo1 + lfo2) * 0.5 * depth;
-            blue *= 1 - lfo2 * depth;
+            red *= 1 - (1 - lfo1) * depth;
+            green *= 1 - (1 - (lfo1 + lfo2) * 0.5) * depth;
+            blue *= 1 - (1 - lfo2) * depth;
 
             color = colorFromNormalized(red, green, blue);
             m_pixels[index] = color;
