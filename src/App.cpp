@@ -154,7 +154,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
         m_dampingWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
 
-        reverbPopup.button("Apply", [this, &reverbPopup] {
+        reverbPopup.button("Apply", [this] {
             m_app->applyReverb(
                 m_decayWidget->value(),
                 m_dampingWidget->value()
@@ -171,7 +171,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
         m_chorusDepth = std::make_unique<SliderTextBox>(chorusPopup, 0.8, "Depth");
 
-        chorusPopup.button("Apply", [this, &chorusPopup] {
+        chorusPopup.button("Apply", [this] {
             m_app->applyChorus(
                 m_chorusRate->value(),
                 m_chorusDepth->value()
@@ -201,7 +201,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
         m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
 
-        tremoloPopup.button("Apply", [this, &tremoloPopup] {
+        tremoloPopup.button("Apply", [this] {
             m_app->applyTremolo(
                 m_tremoloRate->value(),
                 m_tremoloDepth->value(),
