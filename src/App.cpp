@@ -188,18 +188,18 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
         m_tremoloDepth = std::make_unique<SliderTextBox>(tremoloPopup, 1.0, "Depth");
 
+        m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
+
         m_tremoloShape = std::make_unique<sdlgui::DropdownBox>(
             &tremoloPopup,
             std::vector<std::string> {
                 "Sine",
                 "Triangle",
                 "Square",
-                "Saw",
-                "Ramp"
+                "Saw Down",
+                "Saw Up"
             }
         );
-
-        m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
 
         tremoloPopup.button("Apply", [this] {
             m_app->applyTremolo(
@@ -382,9 +382,9 @@ static float tremoloLFO(float phase, int shape)
         return phase >= 0.5 ? 2 - 2 * phase : 2 * phase;
     case 2: // Square
         return phase < 0.5;
-    case 3: // Saw
+    case 3: // Saw Down
         return 1 - phase;
-    case 4: // Ramp
+    case 4: // Saw Up
         return phase;
     }
     return 0;
