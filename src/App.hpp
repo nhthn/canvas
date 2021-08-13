@@ -59,7 +59,7 @@ public:
 
     void clear();
     void applyScaleFilter();
-    void applyReverb();
+    void applyReverb(float decay, float damping);
     void applyChorus();
 
 private:

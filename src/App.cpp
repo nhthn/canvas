@@ -141,9 +141,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         );
 
         reverbPopup.button("Apply", [this, &reverbPopup] {
-            std::cout << m_decayWidget->value(reverbPopup) << std::endl;
-            std::cout << m_dampingWidget->value(reverbPopup) << std::endl;
-            m_app->applyReverb();
+            m_app->applyReverb(
+                m_decayWidget->value(reverbPopup),
+                m_dampingWidget->value(reverbPopup)
+            );
         });
 
         ////////////////
@@ -200,10 +201,14 @@ void App::clear()
     }
 }
 
-void App::applyReverb()
+void App::applyReverb(float decay, float damping)
 {
-    float decayRate = 0.99;
+    float baseDecayLength = 1 + (decay * k_imageWidth * 2);
     for (int row = 0; row < k_imageHeight; row++) {
+        float decayLength = (
+            baseDecayLength * std::pow(static_cast<float>(row) / k_imageHeight, damping)
+        );
+        float k = std::pow(0.001f, 1.0f / decayLength);
         float lastRed = 0;
         float lastGreen = 0;
         float lastBlue = 0;
@@ -213,9 +218,9 @@ void App::applyReverb()
             float red = getRedNormalized(color);
             float green = getGreenNormalized(color);
             float blue = getBlueNormalized(color);
-            red = std::max(lastRed * decayRate, red);
-            green = std::max(lastGreen * decayRate, green);
-            blue = std::max(lastBlue * decayRate, blue);
+            red = std::max(lastRed * k, red);
+            green = std::max(lastGreen * k, green);
+            blue = std::max(lastBlue * k, blue);
             m_pixels[index] = colorFromNormalized(red, green, blue);
             lastRed = red;
             lastGreen = green;
