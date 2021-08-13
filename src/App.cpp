@@ -94,8 +94,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     : m_app(app)
     , sdlgui::Screen(pwindow, sdlgui::Vector2i(width, height), "Canvas")
 {
-    auto& nwindow = window("Toolbox", sdlgui::Vector2i{15, 15})
-        .withLayout<sdlgui::GroupLayout>();
+    auto& nwindow = window("Toolbox", sdlgui::Vector2i{0, 0});
+    nwindow.setDraggable(false);
+
+    nwindow.withLayout<sdlgui::GroupLayout>();
 
     m_drawButton = &nwindow.button("Draw", ENTYPO_ICON_PENCIL, [this] {
         m_app->setMode(App::Mode::Draw);
@@ -296,6 +298,11 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     });
 
     performLayout(mSDL_Renderer);
+
+    nwindow.setHeight(height);
+
+    m_windowWidth = nwindow.width();
+    std::cout << m_windowWidth << std::endl;
 }
 
 App::App()
@@ -693,6 +700,7 @@ void App::drawLine(int x1, int y1, int x2, int y2, int radius, float red, float 
 }
 
 void App::handleEventDrawOrErase(SDL_Event& event) {
+    int toolbarWidth = m_gui->getWindowWidth();
     int radius = m_brushSize / 2;
 
     switch (event.type) {
@@ -707,8 +715,8 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
             m_lastMouseX = -1;
             m_lastMouseY = -1;
             int mouseX = (
-                static_cast<float>(event.motion.x)
-                * k_imageWidth / k_windowWidth
+                static_cast<float>(event.motion.x - toolbarWidth)
+                * k_imageWidth / (k_windowWidth - toolbarWidth)
             );
             int mouseY = (
                 static_cast<float>(event.motion.y)
@@ -728,8 +736,8 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
     case SDL_MOUSEMOTION:
         if (m_leftMouseButtonDown) {
             int mouseX = (
-                static_cast<float>(event.motion.x)
-                * k_imageWidth / k_windowWidth
+                static_cast<float>(event.motion.x - toolbarWidth)
+                * k_imageWidth / (k_windowWidth - toolbarWidth)
             );
             int mouseY = (
                 static_cast<float>(event.motion.y)
@@ -802,10 +810,25 @@ void App::mainLoop()
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
 
-        SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
+        int toolbarWidth = m_gui->getWindowWidth();
+        SDL_Rect imageRect = {
+            toolbarWidth,
+            0,
+            k_windowWidth - toolbarWidth,
+            k_windowHeight
+        };
+        SDL_RenderCopy(m_renderer, m_texture, nullptr, &imageRect);
 
         if (m_playing) {
-            SDL_Rect fillRect = { static_cast<int>(static_cast<float>(m_position) * k_windowWidth / k_imageWidth), 0, 2, k_windowHeight };
+            SDL_Rect fillRect = {
+                toolbarWidth + static_cast<int>(
+                    static_cast<float>(m_position)
+                    * (k_windowWidth - toolbarWidth) / k_imageWidth
+                ),
+                0,
+                2,
+                k_windowHeight
+            };
             SDL_SetRenderDrawColor(m_renderer, 0xff, 0xff, 0xff, 0xff);
             SDL_RenderFillRect(m_renderer, &fillRect);
         }

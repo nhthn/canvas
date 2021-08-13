@@ -161,11 +161,13 @@ public:
     {
     }
 
+    int getWindowWidth() { return m_windowWidth; }
+
 private:
     App* m_app;
+    int m_windowWidth;
+
     sdlgui::Button* m_drawButton;
-    sdlgui::Button* m_eraseButton;
-    sdlgui::Button* m_scaleFilterButton;
 
     std::unique_ptr<SliderTextBox> m_brushSize;
     std::unique_ptr<SliderTextBox> m_colorRed;
