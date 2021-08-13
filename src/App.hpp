@@ -1,4 +1,6 @@
 #include <iostream>
+#include <memory>
+#include <random>
 
 #include <SDL2/SDL.h>
 
@@ -25,7 +27,6 @@
 #include <sdlgui/tabwidget.h>
 #include <sdlgui/switchbox.h>
 #include <sdlgui/formhelper.h>
-#include <memory>
 
 #include "Synth.hpp"
 #include "PortAudioBackend.hpp"
@@ -57,6 +58,7 @@ public:
 
     void applyScaleFilter();
     void applyReverb();
+    void applyChorus();
 
 private:
     std::shared_ptr<RingBuffer<float>> m_ringBuffer;

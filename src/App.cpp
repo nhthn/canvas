@@ -34,6 +34,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         nwindow.button("Reverb", [this] {
             m_app->applyReverb();
         });
+
+        nwindow.button("Chorus", [this] {
+            m_app->applyChorus();
+        });
     }
 
     performLayout(mSDL_Renderer);
@@ -107,6 +111,50 @@ void App::applyReverb()
         }
     }
 }
+
+void App::applyChorus()
+{
+    std::random_device randomDevice;
+    std::mt19937 rng(randomDevice());
+    std::uniform_real_distribution<> distribution(0.0, 1.0);
+    for (int row = 0; row < k_imageHeight; row++) {
+        int lfoPeriod = 1000.f / (k_imageHeight - 1 - row);
+        float lfoCurrent = distribution(rng);
+        float lfoTarget = distribution(rng);
+        int t = 0;
+        for (int column = 0; column < k_imageWidth; column++) {
+            float lfo = (
+                lfoCurrent * static_cast<float>(lfoPeriod - t) / lfoPeriod
+                + lfoTarget * static_cast<float>(t) / lfoPeriod
+            );
+            t += 1;
+            if (t >= lfoPeriod) {
+                t = 0;
+                lfoCurrent = lfoTarget;
+                lfoTarget = distribution(rng);
+            }
+
+            int index = row * k_imageWidth + column;
+            int color = m_pixels[index];
+            float red = ((color & 0xff0000) >> 16) / 255.0;
+            float green = ((color & 0x00ff00) >> 8) / 255.0;
+            float blue = ((color & 0x0000ff) >> 0) / 255.0;
+
+            red *= lfo;
+            green *= lfo;
+            blue *= lfo;
+
+            color = (
+                0xff000000
+                + (static_cast<int>(red * 255) << 16)
+                + (static_cast<int>(green * 255) << 8)
+                + (static_cast<int>(blue * 255) << 0)
+            );
+            m_pixels[index] = color;
+        }
+    }
+}
+
 
 void App::applyScaleFilter()
 {
