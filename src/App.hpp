@@ -57,6 +57,11 @@ public:
     void setMode(Mode mode) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 
+    void setRed(float red) { m_red = red; }
+    void setGreen(float green) { m_green = green; }
+    void setBlue(float blue) { m_blue = blue; }
+    void setOpacity(float opacity) { m_opacity = opacity; }
+
     void clear();
     void applyScaleFilter(int root, int scaleClass);
     void applyReverb(float decay, float damping);
@@ -92,6 +97,11 @@ private:
 
     Mode m_mode = Mode::Draw;
 
+    float m_red;
+    float m_green;
+    float m_blue;
+    float m_opacity;
+
     void initSDL();
     void initWindow();
     void initRenderer();
@@ -111,7 +121,8 @@ public:
     SliderTextBox(
         sdlgui::Widget& parent,
         float value,
-        std::string label
+        std::string label,
+        std::function<void(float)> onChange = [] (float value) { }
     );
 
     float value();
@@ -146,6 +157,11 @@ private:
     sdlgui::Button* m_drawButton;
     sdlgui::Button* m_eraseButton;
     sdlgui::Button* m_scaleFilterButton;
+
+    std::unique_ptr<SliderTextBox> m_colorRed;
+    std::unique_ptr<SliderTextBox> m_colorGreen;
+    std::unique_ptr<SliderTextBox> m_colorBlue;
+    std::unique_ptr<SliderTextBox> m_colorOpacity;
 
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterRootDropDown;
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterScaleClassDropDown;

@@ -49,7 +49,8 @@ static uint32_t colorFromNormalized(float red, float green, float blue)
 SliderTextBox::SliderTextBox(
     sdlgui::Widget& parent,
     float value,
-    std::string label
+    std::string label,
+    std::function<void(float)> onChange
 )
     : m_defaultValue(value)
 {
@@ -65,11 +66,14 @@ SliderTextBox::SliderTextBox(
     m_slider = std::make_unique<sdlgui::Slider>(
         &widget,
         value,
-        [this](sdlgui::Slider* slider, float value) {
+        [this, onChange](sdlgui::Slider* slider, float value) {
+            onChange(value);
             m_textBox->setValue(std::to_string((int)(value * 100)));
         }
     );
     m_slider->withFixedWidth(80);
+
+    onChange(value);
 
     m_textBox = std::make_unique<sdlgui::TextBox>(
         &widget,
@@ -90,153 +94,175 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     : m_app(app)
     , sdlgui::Screen(pwindow, sdlgui::Vector2i(width, height), "Canvas")
 {
-    {
-        auto& nwindow = window("Toolbox", sdlgui::Vector2i{15, 15})
-            .withLayout<sdlgui::GroupLayout>();
+    auto& nwindow = window("Toolbox", sdlgui::Vector2i{15, 15})
+        .withLayout<sdlgui::GroupLayout>();
 
-        m_drawButton = &nwindow.button("Draw", ENTYPO_ICON_PENCIL, [this] {
-            m_app->setMode(App::Mode::Draw);
-        }).withFlags(sdlgui::Button::RadioButton);
-        m_drawButton->setPushed(true);
+    m_drawButton = &nwindow.button("Draw", ENTYPO_ICON_PENCIL, [this] {
+        m_app->setMode(App::Mode::Draw);
+    }).withFlags(sdlgui::Button::RadioButton);
+    m_drawButton->setPushed(true);
 
-        nwindow.button("Erase", ENTYPO_ICON_ERASE, [this] {
-            m_app->setMode(App::Mode::Erase);
-        }).withFlags(sdlgui::Button::RadioButton);
+    nwindow.button("Erase", ENTYPO_ICON_ERASE, [this] {
+        m_app->setMode(App::Mode::Erase);
+    }).withFlags(sdlgui::Button::RadioButton);
 
-        nwindow.button("— Horiz. Line", [this] {
-            m_app->setMode(App::Mode::HorizontalLine);
-        }).withFlags(sdlgui::Button::RadioButton);
+    nwindow.button("— Horiz. Line", [this] {
+        m_app->setMode(App::Mode::HorizontalLine);
+    }).withFlags(sdlgui::Button::RadioButton);
 
-        nwindow.label("Filters");
+    ////////////////
 
-        nwindow.button("Clear", [this] {
-            m_app->clear();
-        });
+    m_colorRed = std::make_unique<SliderTextBox>(
+        nwindow, 1.0f, "Red", [this](float red) {
+            m_app->setRed(red);
+        }
+    );
+    m_colorGreen = std::make_unique<SliderTextBox>(
+        nwindow, 0.0f, "Green", [this](float green) {
+            m_app->setGreen(green);
+        }
+    );
+    m_colorBlue = std::make_unique<SliderTextBox>(
+        nwindow, 1.0f, "Blue", [this](float blue) {
+            m_app->setBlue(blue);
+        }
+    );
+    m_colorOpacity = std::make_unique<SliderTextBox>(
+        nwindow, 1.0f, "Opacity", [this](float opacity) {
+            m_app->setOpacity(opacity);
+        }
+    );
 
-        ////////////////
+    ////////////////
 
-        auto& scaleFilterPopup = nwindow.popupbutton("Scale Filter")
-            .popup()
-            .withLayout<sdlgui::GroupLayout>();
+    nwindow.label("Filters");
 
-        m_scaleFilterRootDropDown = std::make_unique<sdlgui::DropdownBox>(
-            &scaleFilterPopup,
-            std::vector<std::string> {
-                "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
-            }
+    nwindow.button("Clear", [this] {
+        m_app->clear();
+    });
+
+    ////////////////
+
+    auto& scaleFilterPopup = nwindow.popupbutton("Scale Filter")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
+
+    m_scaleFilterRootDropDown = std::make_unique<sdlgui::DropdownBox>(
+        &scaleFilterPopup,
+        std::vector<std::string> {
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+        }
+    );
+
+    m_scaleFilterScaleClassDropDown = std::make_unique<sdlgui::DropdownBox>(
+        &scaleFilterPopup,
+        std::vector<std::string> {
+            "Major",
+            "Minor",
+            "Acoustic",
+            "Harmonic Major",
+            "Harmonic Minor",
+            "Whole Tone",
+            "Octatonic",
+            "Hexatonic (Messiaen)"
+        }
+    );
+    m_scaleFilterScaleClassDropDown->withFixedWidth(240);
+
+    scaleFilterPopup.button("Apply", [this] {
+        m_app->applyScaleFilter(
+            m_scaleFilterRootDropDown->selectedIndex(),
+            m_scaleFilterScaleClassDropDown->selectedIndex()
         );
+    });
 
-        m_scaleFilterScaleClassDropDown = std::make_unique<sdlgui::DropdownBox>(
-            &scaleFilterPopup,
-            std::vector<std::string> {
-                "Major",
-                "Minor",
-                "Acoustic",
-                "Harmonic Major",
-                "Harmonic Minor",
-                "Whole Tone",
-                "Octatonic",
-                "Hexatonic (Messiaen)"
-            }
+    ////////////////
+
+    auto& reverbPopup = nwindow.popupbutton("Reverb")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
+
+    m_decayWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Decay");
+
+    m_dampingWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
+
+    reverbPopup.button("Apply", [this] {
+        m_app->applyReverb(
+            m_decayWidget->value(),
+            m_dampingWidget->value()
         );
-        m_scaleFilterScaleClassDropDown->withFixedWidth(240);
+    });
 
-        scaleFilterPopup.button("Apply", [this] {
-            m_app->applyScaleFilter(
-                m_scaleFilterRootDropDown->selectedIndex(),
-                m_scaleFilterScaleClassDropDown->selectedIndex()
-            );
-        });
+    ////////////////
 
-        ////////////////
+    auto& chorusPopup = nwindow.popupbutton("Chorus")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
 
-        auto& reverbPopup = nwindow.popupbutton("Reverb")
-            .popup()
-            .withLayout<sdlgui::GroupLayout>();
+    m_chorusRate = std::make_unique<SliderTextBox>(chorusPopup, 0.5, "Rate");
 
-        m_decayWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Decay");
+    m_chorusDepth = std::make_unique<SliderTextBox>(chorusPopup, 0.8, "Depth");
 
-        m_dampingWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
-
-        reverbPopup.button("Apply", [this] {
-            m_app->applyReverb(
-                m_decayWidget->value(),
-                m_dampingWidget->value()
-            );
-        });
-
-        ////////////////
-
-        auto& chorusPopup = nwindow.popupbutton("Chorus")
-            .popup()
-            .withLayout<sdlgui::GroupLayout>();
-
-        m_chorusRate = std::make_unique<SliderTextBox>(chorusPopup, 0.5, "Rate");
-
-        m_chorusDepth = std::make_unique<SliderTextBox>(chorusPopup, 0.8, "Depth");
-
-        chorusPopup.button("Apply", [this] {
-            m_app->applyChorus(
-                m_chorusRate->value(),
-                m_chorusDepth->value()
-            );
-        });
-
-        ////////////////
-
-        auto& tremoloPopup = nwindow.popupbutton("Tremolo")
-            .popup()
-            .withLayout<sdlgui::GroupLayout>();
-
-        m_tremoloRate = std::make_unique<SliderTextBox>(tremoloPopup, 0.5, "Rate");
-
-        m_tremoloDepth = std::make_unique<SliderTextBox>(tremoloPopup, 1.0, "Depth");
-
-        m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
-
-        m_tremoloShape = std::make_unique<sdlgui::DropdownBox>(
-            &tremoloPopup,
-            std::vector<std::string> {
-                "Sine",
-                "Triangle",
-                "Square",
-                "Saw Down",
-                "Saw Up"
-            }
+    chorusPopup.button("Apply", [this] {
+        m_app->applyChorus(
+            m_chorusRate->value(),
+            m_chorusDepth->value()
         );
+    });
 
-        tremoloPopup.button("Apply", [this] {
-            m_app->applyTremolo(
-                m_tremoloRate->value(),
-                m_tremoloDepth->value(),
-                m_tremoloShape->selectedIndex(),
-                m_tremoloStereo->value()
-            );
-        });
+    ////////////////
 
-        ////////////////
+    auto& tremoloPopup = nwindow.popupbutton("Tremolo")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
 
-        auto& harmonicsPopup = nwindow.popupbutton("Harmonics")
-            .popup()
-            .withLayout<sdlgui::GroupLayout>();
+    m_tremoloRate = std::make_unique<SliderTextBox>(tremoloPopup, 0.5, "Rate");
 
-        m_harmonics2 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "2");
-        m_harmonics3 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "3");
-        m_harmonics4 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "4");
-        m_harmonics5 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "5");
-        m_subharmonics = std::make_unique<sdlgui::CheckBox>(&harmonicsPopup, "Subharmonics");
+    m_tremoloDepth = std::make_unique<SliderTextBox>(tremoloPopup, 1.0, "Depth");
 
-        harmonicsPopup.button("Apply", [this] {
-            m_app->applyHarmonics(
-                m_harmonics2->value(),
-                m_harmonics3->value(),
-                m_harmonics4->value(),
-                m_harmonics5->value(),
-                m_subharmonics->checked()
-            );
-        });
+    m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
 
-    }
+    m_tremoloShape = std::make_unique<sdlgui::DropdownBox>(
+        &tremoloPopup,
+        std::vector<std::string> {
+            "Sine",
+            "Triangle",
+            "Square",
+            "Saw Down",
+            "Saw Up"
+        }
+    );
+
+    tremoloPopup.button("Apply", [this] {
+        m_app->applyTremolo(
+            m_tremoloRate->value(),
+            m_tremoloDepth->value(),
+            m_tremoloShape->selectedIndex(),
+            m_tremoloStereo->value()
+        );
+    });
+
+    ////////////////
+
+    auto& harmonicsPopup = nwindow.popupbutton("Harmonics")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
+
+    m_harmonics2 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/2, "2");
+    m_harmonics3 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/3, "3");
+    m_harmonics4 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/4, "4");
+    m_harmonics5 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/5, "5");
+    m_subharmonics = std::make_unique<sdlgui::CheckBox>(&harmonicsPopup, "Subharmonics");
+
+    harmonicsPopup.button("Apply", [this] {
+        m_app->applyHarmonics(
+            m_harmonics2->value(),
+            m_harmonics3->value(),
+            m_harmonics4->value(),
+            m_harmonics5->value(),
+            m_subharmonics->checked()
+        );
+    });
 
     performLayout(mSDL_Renderer);
 }
@@ -645,10 +671,10 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                 mouseX,
                 mouseY,
                 5,
-                m_mode == App::Mode::Erase ? 0 : 1,
-                0,
-                m_mode == App::Mode::Erase ? 0 : 1,
-                1
+                m_mode == App::Mode::Erase ? 0 : m_red,
+                m_mode == App::Mode::Erase ? 0 : m_green,
+                m_mode == App::Mode::Erase ? 0 : m_blue,
+                m_mode == App::Mode::Erase ? 1 : m_opacity
             );
         }
         break;
@@ -669,10 +695,10 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                     mouseX,
                     mouseY,
                     5,
-                    m_mode == App::Mode::Erase ? 0 : 1,
-                    0,
-                    m_mode == App::Mode::Erase ? 0 : 1,
-                    1
+                    m_mode == App::Mode::Erase ? 0 : m_red,
+                    m_mode == App::Mode::Erase ? 0 : m_green,
+                    m_mode == App::Mode::Erase ? 0 : m_blue,
+                    m_mode == App::Mode::Erase ? 1 : m_opacity
                 );
             }
             m_lastMouseX = mouseX;
@@ -691,8 +717,8 @@ void App::handleEventHorizontalLine(SDL_Event& event) {
             static_cast<float>(event.motion.y)
             * k_imageHeight / k_windowHeight
         );
-        for (int i = 0; i < k_imageWidth; i++) {
-            m_pixels[mouseY * k_imageWidth + i] = 0xffff00ff;
+        for (int x = 0; x < k_imageWidth; x++) {
+            drawPixel(x, mouseY, m_red, m_green, m_blue, m_opacity);
         }
     }
 }
