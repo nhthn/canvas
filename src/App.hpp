@@ -56,6 +56,7 @@ public:
     void setMode(Mode mode) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 
+    void clear();
     void applyScaleFilter();
     void applyReverb();
     void applyChorus();

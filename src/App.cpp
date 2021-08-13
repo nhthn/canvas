@@ -27,6 +27,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
         nwindow.label("Filters");
 
+        nwindow.button("Clear", [this] {
+            m_app->clear();
+        });
+
         m_scaleFilterButton = &nwindow.button("Scale Filter", [this] {
             m_app->applyScaleFilter();
         });
@@ -66,9 +70,7 @@ App::App()
     );
 
     m_pixels = new Uint32[k_imageHeight * k_imageWidth];
-    for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
-        m_pixels[i] = 0xff000000;
-    }
+    clear();
 }
 
 App::~App()
@@ -80,6 +82,13 @@ void App::run()
 {
     m_audioBackend.run();
     mainLoop();
+}
+
+void App::clear()
+{
+    for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
+        m_pixels[i] = 0xff000000;
+    }
 }
 
 void App::applyReverb()
