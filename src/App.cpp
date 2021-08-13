@@ -206,6 +206,56 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
                 m_chorusDepth->value(chorusPopup)
             );
         });
+
+        ////////////////
+
+        auto& tremoloPopup = nwindow.popupbutton("Tremolo")
+            .popup()
+            .withLayout<sdlgui::GroupLayout>();
+
+        m_tremoloRate = std::make_unique<SliderTextBox>(
+            tremoloPopup,
+            0.5,
+            "Rate",
+            "tremolo-rate-slider",
+            "tremolo-rate-textbox"
+        );
+
+        m_tremoloDepth = std::make_unique<SliderTextBox>(
+            tremoloPopup,
+            1.0,
+            "Depth",
+            "tremolo-depth-slider",
+            "tremolo-depth-textbox"
+        );
+
+        m_tremoloShape = std::make_unique<sdlgui::DropdownBox>(
+            &tremoloPopup,
+            std::vector<std::string> {
+                "Sine",
+                "Triangle",
+                "Square",
+                "Saw",
+                "Ramp"
+            }
+        );
+
+        m_tremoloStereo = std::make_unique<SliderTextBox>(
+            tremoloPopup,
+            0.0,
+            "Stereo",
+            "tremolo-stereo-slider",
+            "tremolo-stereo-textbox"
+        );
+
+        tremoloPopup.button("Apply", [this, &tremoloPopup] {
+            m_app->applyTremolo(
+                m_tremoloRate->value(tremoloPopup),
+                m_tremoloDepth->value(tremoloPopup),
+                m_tremoloShape->selectedIndex(),
+                m_tremoloStereo->value(tremoloPopup)
+            );
+        });
     }
 
     performLayout(mSDL_Renderer);
@@ -360,14 +410,46 @@ void App::applyScaleFilter(int root, int scaleClass)
     };
     for (int row = 0; row < k_imageHeight; row++) {
         // Subtract 6 because lowest frequency is A.
-        int degreeIn24EDO = k_imageHeight - 1 - row - 6;
-        if (degreeIn24EDO % 2 == 1 || scale[scaleClass][(degreeIn24EDO / 2 - root) % 12] == 0) {
+        int stepsIn24EDO = k_imageHeight - 1 - row - 6;
+        int offsetFromRoot = ((stepsIn24EDO / 2 - root) % 12 + 12) % 12;
+        if (stepsIn24EDO % 2 != 0 || scale[scaleClass][offsetFromRoot] == 0) {
             for (int column = 0; column < k_imageWidth; column++) {
                 m_pixels[row * k_imageWidth + column] = 0;
             }
         }
     }
 }
+
+void App::applyTremolo(float rate, float depth, int shape, float stereo)
+{
+    for (int row = 0; row < k_imageHeight; row++) {
+        float lfoPhase = 0;
+        float lfoPeriod = std::pow(k_imageWidth, 1 - rate);
+        float phaseIncrement = 1 / lfoPeriod;
+        for (int column = 0; column < k_imageWidth; column++) {
+            float lfo1 = std::cos(lfoPhase * 3.14159265358979 * 2) * 0.5 + 0.5;
+            float lfo2 = std::cos((lfoPhase + 0.5 * stereo) * 3.14159265358979 * 2) * 0.5 + 0.5;
+            lfoPhase += phaseIncrement;
+            while (lfoPhase > 1.0) {
+                lfoPhase -= 1.0;
+            }
+
+            int index = row * k_imageWidth + column;
+            int color = m_pixels[index];
+            float red = getRedNormalized(color);
+            float green = getGreenNormalized(color);
+            float blue = getBlueNormalized(color);
+
+            red *= 1 - lfo1 * depth;
+            green *= 1 - (lfo1 + lfo2) * 0.5 * depth;
+            blue *= 1 - lfo2 * depth;
+
+            color = colorFromNormalized(red, green, blue);
+            m_pixels[index] = color;
+        }
+    }
+}
+
 
 void App::initSDL()
 {

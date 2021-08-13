@@ -61,6 +61,7 @@ public:
     void applyScaleFilter(int root, int scaleClass);
     void applyReverb(float decay, float damping);
     void applyChorus(float rate, float depth);
+    void applyTremolo(float rate, float depth, int shape, float stereo);
 
 private:
     std::shared_ptr<RingBuffer<float>> m_ringBuffer;
@@ -146,6 +147,12 @@ private:
 
     std::unique_ptr<SliderTextBox> m_decayWidget;
     std::unique_ptr<SliderTextBox> m_dampingWidget;
+
     std::unique_ptr<SliderTextBox> m_chorusRate;
     std::unique_ptr<SliderTextBox> m_chorusDepth;
+
+    std::unique_ptr<SliderTextBox> m_tremoloRate;
+    std::unique_ptr<SliderTextBox> m_tremoloDepth;
+    std::unique_ptr<sdlgui::DropdownBox> m_tremoloShape;
+    std::unique_ptr<SliderTextBox> m_tremoloStereo;
 };
