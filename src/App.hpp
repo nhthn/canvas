@@ -104,17 +104,15 @@ public:
     SliderTextBox(
         sdlgui::Widget& parent,
         float value,
-        std::string label,
-        std::string sliderName,
-        std::string textBoxName
+        std::string label
     );
 
-    float value(sdlgui::Widget& parent);
+    float value();
 
 private:
     float m_defaultValue;
-    std::string m_sliderName;
-    std::string m_textBoxName;
+    std::unique_ptr<sdlgui::Slider> m_slider;
+    std::unique_ptr<sdlgui::TextBox> m_textBox;
 };
 
 class GUI : public sdlgui::Screen

@@ -45,13 +45,9 @@ static uint32_t colorFromNormalized(float red, float green, float blue)
 SliderTextBox::SliderTextBox(
     sdlgui::Widget& parent,
     float value,
-    std::string label,
-    std::string sliderName,
-    std::string textBoxName
+    std::string label
 )
     : m_defaultValue(value)
-    , m_sliderName(sliderName)
-    , m_textBoxName(textBoxName)
 {
     auto& widget = parent
         .widget()
@@ -62,29 +58,28 @@ SliderTextBox::SliderTextBox(
     widget.label(label)
         .withFixedSize(sdlgui::Vector2i(60, 25));
 
-    auto& slider = widget.slider(value, [this](sdlgui::Slider* slider, float value) {
-        if (auto* textBox = slider->gfind<sdlgui::TextBox>(m_textBoxName)) {
-            textBox->setValue(std::to_string((int)(value * 100)));
+    m_slider = std::make_unique<sdlgui::Slider>(
+        &widget,
+        value,
+        [this](sdlgui::Slider* slider, float value) {
+            m_textBox->setValue(std::to_string((int)(value * 100)));
         }
-    });
-    slider
-        .withId(m_sliderName)
-        .withFixedWidth(80);
+    );
+    m_slider->withFixedWidth(80);
 
-    auto& textBox = widget.textbox(std::to_string(static_cast<int>(value * 100)), "%");
-    textBox
-        .withAlignment(sdlgui::TextBox::Alignment::Right)
-        .withId(textBoxName)
+    m_textBox = std::make_unique<sdlgui::TextBox>(
+        &widget,
+        std::to_string(static_cast<int>(value * 100)),
+        "%"
+    );
+    m_textBox
+        ->withAlignment(sdlgui::TextBox::Alignment::Right)
         .withFixedSize(sdlgui::Vector2i(60, 25))
         .withFontSize(20);
 }
 
-float SliderTextBox::value(sdlgui::Widget& parent) {
-    auto slider = parent.gfind<sdlgui::Slider>(m_sliderName);
-    if (!slider) {
-        return m_defaultValue;
-    }
-    return slider->value();
+float SliderTextBox::value() {
+    return m_slider->value();
 }
 
 GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
@@ -155,26 +150,14 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             .popup()
             .withLayout<sdlgui::GroupLayout>();
 
-        m_decayWidget = std::make_unique<SliderTextBox>(
-            reverbPopup,
-            0.5f,
-            "Decay",
-            "reverb-decay-slider",
-            "reverb-decay-textbox"
-        );
+        m_decayWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Decay");
 
-        m_dampingWidget = std::make_unique<SliderTextBox>(
-            reverbPopup,
-            0.5f,
-            "Damping",
-            "reverb-damping-slider",
-            "reverb-damping-textbox"
-        );
+        m_dampingWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
 
         reverbPopup.button("Apply", [this, &reverbPopup] {
             m_app->applyReverb(
-                m_decayWidget->value(reverbPopup),
-                m_dampingWidget->value(reverbPopup)
+                m_decayWidget->value(),
+                m_dampingWidget->value()
             );
         });
 
@@ -184,26 +167,14 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             .popup()
             .withLayout<sdlgui::GroupLayout>();
 
-        m_chorusRate = std::make_unique<SliderTextBox>(
-            chorusPopup,
-            0.5,
-            "Rate",
-            "chorus-decay-slider",
-            "chorus-decay-textbox"
-        );
+        m_chorusRate = std::make_unique<SliderTextBox>(chorusPopup, 0.5, "Rate");
 
-        m_chorusDepth = std::make_unique<SliderTextBox>(
-            chorusPopup,
-            0.8,
-            "Depth",
-            "chorus-depth-slider",
-            "chorus-depth-textbox"
-        );
+        m_chorusDepth = std::make_unique<SliderTextBox>(chorusPopup, 0.8, "Depth");
 
         chorusPopup.button("Apply", [this, &chorusPopup] {
             m_app->applyChorus(
-                m_chorusRate->value(chorusPopup),
-                m_chorusDepth->value(chorusPopup)
+                m_chorusRate->value(),
+                m_chorusDepth->value()
             );
         });
 
@@ -213,21 +184,9 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             .popup()
             .withLayout<sdlgui::GroupLayout>();
 
-        m_tremoloRate = std::make_unique<SliderTextBox>(
-            tremoloPopup,
-            0.5,
-            "Rate",
-            "tremolo-rate-slider",
-            "tremolo-rate-textbox"
-        );
+        m_tremoloRate = std::make_unique<SliderTextBox>(tremoloPopup, 0.5, "Rate");
 
-        m_tremoloDepth = std::make_unique<SliderTextBox>(
-            tremoloPopup,
-            1.0,
-            "Depth",
-            "tremolo-depth-slider",
-            "tremolo-depth-textbox"
-        );
+        m_tremoloDepth = std::make_unique<SliderTextBox>(tremoloPopup, 1.0, "Depth");
 
         m_tremoloShape = std::make_unique<sdlgui::DropdownBox>(
             &tremoloPopup,
@@ -240,20 +199,14 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             }
         );
 
-        m_tremoloStereo = std::make_unique<SliderTextBox>(
-            tremoloPopup,
-            0.0,
-            "Stereo",
-            "tremolo-stereo-slider",
-            "tremolo-stereo-textbox"
-        );
+        m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
 
         tremoloPopup.button("Apply", [this, &tremoloPopup] {
             m_app->applyTremolo(
-                m_tremoloRate->value(tremoloPopup),
-                m_tremoloDepth->value(tremoloPopup),
+                m_tremoloRate->value(),
+                m_tremoloDepth->value(),
                 m_tremoloShape->selectedIndex(),
-                m_tremoloStereo->value(tremoloPopup)
+                m_tremoloStereo->value()
             );
         });
     }
