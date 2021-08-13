@@ -16,13 +16,17 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         auto& nwindow = window("Toolbox", sdlgui::Vector2i{15, 15})
             .withLayout<sdlgui::GroupLayout>();
 
-        m_drawButton = &nwindow.button("Draw", [this] {
+        m_drawButton = &nwindow.button("Draw", ENTYPO_ICON_PENCIL, [this] {
             m_app->setMode(App::Mode::Draw);
         }).withFlags(sdlgui::Button::RadioButton);
         m_drawButton->setPushed(true);
 
-        m_eraseButton = &nwindow.button("Erase", [this] {
+        nwindow.button("Erase", ENTYPO_ICON_ERASE, [this] {
             m_app->setMode(App::Mode::Erase);
+        }).withFlags(sdlgui::Button::RadioButton);
+
+        nwindow.button("— Horiz. Line", [this] {
+            m_app->setMode(App::Mode::HorizontalLine);
         }).withFlags(sdlgui::Button::RadioButton);
 
         nwindow.label("Filters");
@@ -285,6 +289,77 @@ void App::drawLine(int x1, int y1, int x2, int y2, int radius, int color)
     }
 }
 
+void App::handleEventDrawOrErase(SDL_Event& event) {
+    switch (event.type) {
+    case SDL_MOUSEBUTTONUP:
+        if (event.button.button == SDL_BUTTON_LEFT) {
+            m_leftMouseButtonDown = false;
+        }
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+        if (event.button.button == SDL_BUTTON_LEFT) {
+            m_leftMouseButtonDown = true;
+            m_lastMouseX = -1;
+            m_lastMouseY = -1;
+            int mouseX = (
+                static_cast<float>(event.motion.x)
+                * k_imageWidth / k_windowWidth
+            );
+            int mouseY = (
+                static_cast<float>(event.motion.y)
+                * k_imageHeight / k_windowHeight
+            );
+            stampCircle(
+                mouseX,
+                mouseY,
+                5,
+                m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
+            );
+        }
+        break;
+    case SDL_MOUSEMOTION:
+        if (m_leftMouseButtonDown) {
+            int mouseX = (
+                static_cast<float>(event.motion.x)
+                * k_imageWidth / k_windowWidth
+            );
+            int mouseY = (
+                static_cast<float>(event.motion.y)
+                * k_imageHeight / k_windowHeight
+            );
+            if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
+                drawLine(
+                    m_lastMouseX,
+                    m_lastMouseY,
+                    mouseX,
+                    mouseY,
+                    5,
+                    m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
+                );
+            }
+            m_lastMouseX = mouseX;
+            m_lastMouseY = mouseY;
+        }
+        break;
+    }
+}
+
+void App::handleEventHorizontalLine(SDL_Event& event) {
+    if (event.type != SDL_MOUSEBUTTONDOWN) {
+        return;
+    }
+    if (event.button.button == SDL_BUTTON_LEFT) {
+        int mouseY = (
+            static_cast<float>(event.motion.y)
+            * k_imageHeight / k_windowHeight
+        );
+        for (int i = 0; i < k_imageWidth; i++) {
+            m_pixels[mouseY * k_imageWidth + i] = 0xffff00ff;
+        }
+    }
+}
+
+
 void App::handleEvents()
 {
     SDL_Event event;
@@ -293,60 +368,14 @@ void App::handleEvents()
         if (guiProcessedEvent) {
             continue;
         }
-        switch (event.type) {
-        case SDL_QUIT:
+        if (event.type == SDL_QUIT) {
             exit(0);
-            break;
-        case SDL_MOUSEBUTTONUP:
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                m_leftMouseButtonDown = false;
-            }
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT) {
-                m_leftMouseButtonDown = true;
-                m_lastMouseX = -1;
-                m_lastMouseY = -1;
-                int mouseX = (
-                    static_cast<float>(event.motion.x)
-                    * k_imageWidth / k_windowWidth
-                );
-                int mouseY = (
-                    static_cast<float>(event.motion.y)
-                    * k_imageHeight / k_windowHeight
-                );
-                stampCircle(
-                    mouseX,
-                    mouseY,
-                    5,
-                    m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
-                );
-            }
-            break;
-        case SDL_MOUSEMOTION:
-            if (m_leftMouseButtonDown) {
-                int mouseX = (
-                    static_cast<float>(event.motion.x)
-                    * k_imageWidth / k_windowWidth
-                );
-                int mouseY = (
-                    static_cast<float>(event.motion.y)
-                    * k_imageHeight / k_windowHeight
-                );
-                if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
-                    drawLine(
-                        m_lastMouseX,
-                        m_lastMouseY,
-                        mouseX,
-                        mouseY,
-                        5,
-                        m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
-                    );
-                }
-                m_lastMouseX = mouseX;
-                m_lastMouseY = mouseY;
-            }
-            break;
+        }
+        if (m_mode == App::Mode::Draw || m_mode == App::Mode::Erase) {
+            handleEventDrawOrErase(event);
+        }
+        if (m_mode == App::Mode::HorizontalLine) {
+            handleEventHorizontalLine(event);
         }
     }
 }

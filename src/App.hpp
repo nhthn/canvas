@@ -49,7 +49,8 @@ public:
 
     enum class Mode {
         Draw,
-        Erase
+        Erase,
+        HorizontalLine
     };
 
 
@@ -92,6 +93,8 @@ private:
     void stampCircle(int x, int y, int radius, int color);
     void drawLine(int x1, int y1, int x2, int y2, int radius, int color);
     void handleEvents();
+    void handleEventDrawOrErase(SDL_Event& event);
+    void handleEventHorizontalLine(SDL_Event& event);
     void sendAmplitudesToAudioThread();
 };
 
