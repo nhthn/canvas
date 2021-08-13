@@ -8,6 +8,40 @@ static int nextPowerOfTwo(int x) {
     return power;
 }
 
+static int getRed(int color) {
+    return (color & 0xff0000) >> 16;
+}
+
+static float getRedNormalized(int color) {
+    return getRed(color) / 255.f;
+}
+
+static int getGreen(int color) {
+    return (color & 0x00ff00) >> 8;
+}
+
+static float getGreenNormalized(int color) {
+    return getGreen(color) / 255.f;
+}
+
+static int getBlue(int color) {
+    return ((color & 0x0000ff) >> 0);
+}
+
+static float getBlueNormalized(int color) {
+    return getBlue(color) / 255.f;
+}
+
+static uint32_t colorFromNormalized(float red, float green, float blue)
+{
+    return (
+        0xff000000
+        + (static_cast<int>(red * 255) << 16)
+        + (static_cast<int>(green * 255) << 8)
+        + (static_cast<int>(blue * 255) << 0)
+    );
+}
+
 GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     : m_app(app)
     , sdlgui::Screen(pwindow, sdlgui::Vector2i(width, height), "Canvas")
@@ -105,19 +139,13 @@ void App::applyReverb()
         for (int column = 0; column < k_imageWidth; column++) {
             int index = row * k_imageWidth + column;
             int color = m_pixels[index];
-            float red = ((color & 0xff0000) >> 16) / 255.0;
-            float green = ((color & 0x00ff00) >> 8) / 255.0;
-            float blue = ((color & 0x0000ff) >> 0) / 255.0;
+            float red = getRedNormalized(color);
+            float green = getGreenNormalized(color);
+            float blue = getBlueNormalized(color);
             red = std::max(lastRed * decayRate, red);
             green = std::max(lastGreen * decayRate, green);
             blue = std::max(lastBlue * decayRate, blue);
-            color = (
-                0xff000000
-                + (static_cast<int>(red * 255) << 16)
-                + (static_cast<int>(green * 255) << 8)
-                + (static_cast<int>(blue * 255) << 0)
-            );
-            m_pixels[index] = color;
+            m_pixels[index] = colorFromNormalized(red, green, blue);
             lastRed = red;
             lastGreen = green;
             lastBlue = blue;
@@ -173,20 +201,15 @@ void App::applyChorus()
         for (int column = 0; column < k_imageWidth; column++) {
             int index = row * k_imageWidth + column;
             int color = m_pixels[index];
-            float red = ((color & 0xff0000) >> 16) / 255.0;
-            float green = ((color & 0x00ff00) >> 8) / 255.0;
-            float blue = ((color & 0x0000ff) >> 0) / 255.0;
+            float red = getRedNormalized(color);
+            float green = getGreenNormalized(color);
+            float blue = getBlueNormalized(color);
 
             red *= lfoRed.process();
             green *= lfoGreen.process();
             blue *= lfoBlue.process();
 
-            color = (
-                0xff000000
-                + (static_cast<int>(red * 255) << 16)
-                + (static_cast<int>(green * 255) << 8)
-                + (static_cast<int>(blue * 255) << 0)
-            );
+            color = colorFromNormalized(red, green, blue);
             m_pixels[index] = color;
         }
     }
