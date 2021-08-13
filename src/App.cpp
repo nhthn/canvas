@@ -46,7 +46,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 App::App()
     : m_ringBuffer(
         std::make_shared<RingBuffer<float>>(
-            nextPowerOfTwo(k_windowHeight)
+            nextPowerOfTwo(k_windowHeight * 2)
         )
     )
     , m_synth(m_ringBuffer)
@@ -112,37 +112,61 @@ void App::applyReverb()
     }
 }
 
+
+class RandomLFO {
+public:
+    RandomLFO(std::mt19937& rng, int period)
+        : m_rng(rng), m_period(period), m_distribution(0.0, 1.0)
+    {
+        m_current = m_distribution(rng);
+        m_target = m_distribution(rng);
+        m_t = 0;
+    }
+
+    float process()
+    {
+        float value = (
+            m_current * static_cast<float>(m_period - m_t) / m_period
+            + m_target * static_cast<float>(m_t) / m_period
+        );
+        m_t += 1;
+        if (m_t >= m_period) {
+            m_t = 0;
+            m_current = m_target;
+            m_target = m_distribution(m_rng);
+        }
+        return value;
+    }
+
+private:
+    std::mt19937 m_rng;
+    int m_period;
+    std::uniform_real_distribution<> m_distribution;
+    float m_current;
+    float m_target;
+    int m_t;
+};
+
+
 void App::applyChorus()
 {
-    std::random_device randomDevice;
-    std::mt19937 rng(randomDevice());
-    std::uniform_real_distribution<> distribution(0.0, 1.0);
     for (int row = 0; row < k_imageHeight; row++) {
+        std::random_device randomDevice;
+        std::mt19937 rng(randomDevice());
         int lfoPeriod = 1000.f / (k_imageHeight - 1 - row);
-        float lfoCurrent = distribution(rng);
-        float lfoTarget = distribution(rng);
-        int t = 0;
+        RandomLFO lfoRed(rng, lfoPeriod);
+        RandomLFO lfoGreen(rng, lfoPeriod);
+        RandomLFO lfoBlue(rng, lfoPeriod);
         for (int column = 0; column < k_imageWidth; column++) {
-            float lfo = (
-                lfoCurrent * static_cast<float>(lfoPeriod - t) / lfoPeriod
-                + lfoTarget * static_cast<float>(t) / lfoPeriod
-            );
-            t += 1;
-            if (t >= lfoPeriod) {
-                t = 0;
-                lfoCurrent = lfoTarget;
-                lfoTarget = distribution(rng);
-            }
-
             int index = row * k_imageWidth + column;
             int color = m_pixels[index];
             float red = ((color & 0xff0000) >> 16) / 255.0;
             float green = ((color & 0x00ff00) >> 8) / 255.0;
             float blue = ((color & 0x0000ff) >> 0) / 255.0;
 
-            red *= lfo;
-            green *= lfo;
-            blue *= lfo;
+            red *= lfoRed.process();
+            green *= lfoGreen.process();
+            blue *= lfoBlue.process();
 
             color = (
                 0xff000000
@@ -286,7 +310,7 @@ void App::handleEvents()
                     mouseX,
                     mouseY,
                     5,
-                    m_mode == App::Mode::Erase ? 0xff000000 : 0xffffffff
+                    m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
                 );
             }
             break;
@@ -307,7 +331,7 @@ void App::handleEvents()
                         mouseX,
                         mouseY,
                         5,
-                        m_mode == App::Mode::Erase ? 0xff000000 : 0xffffffff
+                        m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
                     );
                 }
                 m_lastMouseX = mouseX;
@@ -352,10 +376,12 @@ void App::mainLoop()
 void App::sendAmplitudesToAudioThread()
 {
     int position = m_position;
-    float amplitudes[k_imageHeight];
+    float amplitudes[2 * k_imageHeight];
     for (int i = 0; i < k_imageHeight; i++) {
-        amplitudes[i] = ((m_pixels[k_imageWidth * (k_imageHeight - 1 - i) + position] & 0x0000ff00) >> 8) / 255.0 * m_overallGain;
+        int index = k_imageWidth * (k_imageHeight - 1 - i) + position;
+        amplitudes[2 * i] = (m_pixels[index] & 0x000000ff) / 255.0 * m_overallGain;
+        amplitudes[2 * i + 1] = ((m_pixels[index] & 0x00ff0000) >> 16) / 255.0 * m_overallGain;
     }
 
-    m_ringBuffer->write(amplitudes, k_imageHeight);
+    m_ringBuffer->write(amplitudes, 2 * k_imageHeight);
 }

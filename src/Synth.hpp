@@ -9,13 +9,16 @@ class Oscillator {
 public:
     Oscillator(float frequency);
     void processAdd(float* out1, float* out2, int blockSize);
-    void setTargetAmplitude(float amplitude) { m_targetAmplitude = amplitude; };
+    void setTargetAmplitudeLeft(float amplitude) { m_targetAmplitudeLeft = amplitude; };
+    void setTargetAmplitudeRight(float amplitude) { m_targetAmplitudeRight = amplitude; };
 
 private:
     float m_phase = 0;
     const float m_frequency;
-    float m_amplitude = 0.0;
-    float m_targetAmplitude = 0.0;
+    float m_amplitudeLeft = 0.0;
+    float m_targetAmplitudeLeft = 0.0;
+    float m_amplitudeRight = 0.0;
+    float m_targetAmplitudeRight = 0.0;
 };
 
 class Synth {
