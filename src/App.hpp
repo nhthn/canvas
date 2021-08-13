@@ -62,6 +62,13 @@ public:
     void applyReverb(float decay, float damping);
     void applyChorus(float rate, float depth);
     void applyTremolo(float rate, float depth, int shape, float stereo);
+    void applyHarmonics(
+        float amplitude2,
+        float amplitude3,
+        float amplitude4,
+        float amplitude5,
+        bool subharmonics
+    );
 
 private:
     std::shared_ptr<RingBuffer<float>> m_ringBuffer;
@@ -153,4 +160,10 @@ private:
     std::unique_ptr<SliderTextBox> m_tremoloDepth;
     std::unique_ptr<sdlgui::DropdownBox> m_tremoloShape;
     std::unique_ptr<SliderTextBox> m_tremoloStereo;
+
+    std::unique_ptr<SliderTextBox> m_harmonics2;
+    std::unique_ptr<SliderTextBox> m_harmonics3;
+    std::unique_ptr<SliderTextBox> m_harmonics4;
+    std::unique_ptr<SliderTextBox> m_harmonics5;
+    std::unique_ptr<sdlgui::CheckBox> m_subharmonics;
 };

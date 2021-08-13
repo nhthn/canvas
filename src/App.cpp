@@ -32,13 +32,17 @@ static float getBlueNormalized(int color) {
     return getBlue(color) / 255.f;
 }
 
+float clamp01(float x) {
+    return std::max(std::min(x, 1.0f), 0.0f);
+}
+
 static uint32_t colorFromNormalized(float red, float green, float blue)
 {
     return (
         0xff000000
-        + (static_cast<int>(red * 255) << 16)
-        + (static_cast<int>(green * 255) << 8)
-        + (static_cast<int>(blue * 255) << 0)
+        + (static_cast<int>(clamp01(red) * 255) << 16)
+        + (static_cast<int>(clamp01(green) * 255) << 8)
+        + (static_cast<int>(clamp01(blue) * 255) << 0)
     );
 }
 
@@ -209,6 +213,29 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
                 m_tremoloStereo->value()
             );
         });
+
+        ////////////////
+
+        auto& harmonicsPopup = nwindow.popupbutton("Harmonics")
+            .popup()
+            .withLayout<sdlgui::GroupLayout>();
+
+        m_harmonics2 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "2");
+        m_harmonics3 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "3");
+        m_harmonics4 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "4");
+        m_harmonics5 = std::make_unique<SliderTextBox>(harmonicsPopup, 0.5, "5");
+        m_subharmonics = std::make_unique<sdlgui::CheckBox>(&harmonicsPopup, "Subharmonics");
+
+        harmonicsPopup.button("Apply", [this] {
+            m_app->applyHarmonics(
+                m_harmonics2->value(),
+                m_harmonics3->value(),
+                m_harmonics4->value(),
+                m_harmonics5->value(),
+                m_subharmonics->checked()
+            );
+        });
+
     }
 
     performLayout(mSDL_Renderer);
@@ -420,6 +447,85 @@ void App::applyTremolo(float rate, float depth, int shape, float stereo)
     }
 }
 
+void App::applyHarmonics(
+    float amplitude2,
+    float amplitude3,
+    float amplitude4,
+    float amplitude5,
+    bool subharmonics
+)
+{
+    for (int row = 0; row < k_imageHeight; row++) {
+        for (int column = 0; column < k_imageWidth; column++) {
+            float red2 = 0, green2 = 0, blue2 = 0;
+            float red3 = 0, green3 = 0, blue3 = 0;
+            float red4 = 0, green4 = 0, blue4 = 0;
+            float red5 = 0, green5 = 0, blue5 = 0;
+
+            int sign = subharmonics ? -1 : 1;
+
+            int index2 = (row + 12 * 2 * sign) * k_imageWidth + column;
+            if (0 <= index2 && index2 < k_imageWidth * k_imageHeight) {
+                int color2 = m_pixels[index2];
+                red2 = getRedNormalized(color2);
+                green2 = getGreenNormalized(color2);
+                blue2 = getBlueNormalized(color2);
+            }
+
+            int index3 = (row + (12 + 7) * 2 * sign) * k_imageWidth + column;
+            if (0 <= index3 && index3 < k_imageWidth * k_imageHeight) {
+                int color3 = m_pixels[index3];
+                red3 = getRedNormalized(color3);
+                green3 = getGreenNormalized(color3);
+                blue3 = getBlueNormalized(color3);
+            }
+
+            int index4 = (row + 24 * 2 * sign) * k_imageWidth + column;
+            if (0 <= index4 && index4 < k_imageWidth * k_imageHeight) {
+                int color4 = m_pixels[index4];
+                red4 = getRedNormalized(color4);
+                green4 = getGreenNormalized(color4);
+                blue4 = getBlueNormalized(color4);
+            }
+
+            int index5 = (row + (24 + 4) * 2 * sign) * k_imageWidth + column;
+            if (0 <= index5 && index5 < k_imageWidth * k_imageHeight) {
+                int color5 = m_pixels[index5];
+                red5 = getRedNormalized(color5);
+                green5 = getGreenNormalized(color5);
+                blue5 = getBlueNormalized(color5);
+            }
+
+            int index = row * k_imageWidth + column;
+            int color = m_pixels[index];
+            float red = getRedNormalized(color);
+            float green = getGreenNormalized(color);
+            float blue = getBlueNormalized(color);
+
+            red += (
+                red2 * amplitude2
+                + red3 * amplitude3
+                + red4 * amplitude4
+                + red5 * amplitude5
+            );
+            green += (
+                green2 * amplitude2
+                + green3 * amplitude3
+                + green4 * amplitude4
+                + green5 * amplitude5
+            );
+            blue += (
+                blue2 * amplitude2
+                + blue3 * amplitude3
+                + blue4 * amplitude4
+                + blue5 * amplitude5
+            );
+
+            color = colorFromNormalized(red, green, blue);
+            m_pixels[index] = color;
+        }
+    }
+}
 
 void App::initSDL()
 {
