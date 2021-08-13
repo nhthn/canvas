@@ -63,7 +63,7 @@ App::App()
 
     m_pixels = new Uint32[k_imageHeight * k_imageWidth];
     for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
-        m_pixels[i] = 0;
+        m_pixels[i] = 0xff000000;
     }
 }
 
@@ -238,7 +238,7 @@ void App::handleEvents()
                     mouseX,
                     mouseY,
                     5,
-                    m_mode == App::Mode::Erase ? 0x00000000 : 0xffffffff
+                    m_mode == App::Mode::Erase ? 0xff000000 : 0xffffffff
                 );
             }
             break;
@@ -259,7 +259,7 @@ void App::handleEvents()
                         mouseX,
                         mouseY,
                         5,
-                        m_mode == App::Mode::Erase ? 0x00000000 : 0xffffffff
+                        m_mode == App::Mode::Erase ? 0xff000000 : 0xffffffff
                     );
                 }
                 m_lastMouseX = mouseX;
