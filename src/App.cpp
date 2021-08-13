@@ -149,8 +149,31 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
         ////////////////
 
-        nwindow.button("Chorus", [this] {
-            m_app->applyChorus();
+        auto& chorusPopup = nwindow.popupbutton("Chorus")
+            .popup()
+            .withLayout<sdlgui::GroupLayout>();
+
+        m_chorusRate = std::make_unique<SliderTextBox>(
+            chorusPopup,
+            0.5,
+            "Rate",
+            "chorus-decay-slider",
+            "chorus-decay-textbox"
+        );
+
+        m_chorusDepth = std::make_unique<SliderTextBox>(
+            chorusPopup,
+            0.8,
+            "Depth",
+            "chorus-depth-slider",
+            "chorus-depth-textbox"
+        );
+
+        chorusPopup.button("Apply", [this, &chorusPopup] {
+            m_app->applyChorus(
+                m_chorusRate->value(chorusPopup),
+                m_chorusDepth->value(chorusPopup)
+            );
         });
     }
 
@@ -265,12 +288,12 @@ private:
 };
 
 
-void App::applyChorus()
+void App::applyChorus(float rate, float depth)
 {
     for (int row = 0; row < k_imageHeight; row++) {
         std::random_device randomDevice;
         std::mt19937 rng(randomDevice());
-        int lfoPeriod = 1000.f / (k_imageHeight - 1 - row);
+        int lfoPeriod = 1000.f / (k_imageHeight - 1 - row) / (0.05 + rate);
         RandomLFO lfoRed(rng, lfoPeriod);
         RandomLFO lfoGreen(rng, lfoPeriod);
         RandomLFO lfoBlue(rng, lfoPeriod);
@@ -281,9 +304,9 @@ void App::applyChorus()
             float green = getGreenNormalized(color);
             float blue = getBlueNormalized(color);
 
-            red *= lfoRed.process();
-            green *= lfoGreen.process();
-            blue *= lfoBlue.process();
+            red *= 1 - lfoRed.process() * depth;
+            green *= 1 - lfoGreen.process() * depth;
+            blue *= 1 - lfoBlue.process() * depth;
 
             color = colorFromNormalized(red, green, blue);
             m_pixels[index] = color;

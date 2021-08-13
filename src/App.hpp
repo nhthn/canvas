@@ -60,7 +60,7 @@ public:
     void clear();
     void applyScaleFilter();
     void applyReverb(float decay, float damping);
-    void applyChorus();
+    void applyChorus(float rate, float depth);
 
 private:
     std::shared_ptr<RingBuffer<float>> m_ringBuffer;
@@ -143,4 +143,6 @@ private:
 
     std::unique_ptr<SliderTextBox> m_decayWidget;
     std::unique_ptr<SliderTextBox> m_dampingWidget;
+    std::unique_ptr<SliderTextBox> m_chorusRate;
+    std::unique_ptr<SliderTextBox> m_chorusDepth;
 };
