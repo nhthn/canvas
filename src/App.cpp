@@ -42,6 +42,51 @@ static uint32_t colorFromNormalized(float red, float green, float blue)
     );
 }
 
+SliderTextBox::SliderTextBox(
+    sdlgui::Widget& parent,
+    float value,
+    std::string label,
+    std::string sliderName,
+    std::string textBoxName
+)
+    : m_defaultValue(value)
+    , m_sliderName(sliderName)
+    , m_textBoxName(textBoxName)
+{
+    auto& widget = parent
+        .widget()
+        .withLayout<sdlgui::BoxLayout>(
+            sdlgui::Orientation::Horizontal, sdlgui::Alignment::Middle, 0, 20
+        );
+
+    widget.label(label)
+        .withFixedSize(sdlgui::Vector2i(60, 25));
+
+    auto& slider = widget.slider(value, [this](sdlgui::Slider* slider, float value) {
+        if (auto* textBox = slider->gfind<sdlgui::TextBox>(m_textBoxName)) {
+            textBox->setValue(std::to_string((int)(value * 100)));
+        }
+    });
+    slider
+        .withId(m_sliderName)
+        .withFixedWidth(80);
+
+    auto& textBox = widget.textbox(std::to_string(static_cast<int>(value * 100)), "%");
+    textBox
+        .withAlignment(sdlgui::TextBox::Alignment::Right)
+        .withId(textBoxName)
+        .withFixedSize(sdlgui::Vector2i(60, 25))
+        .withFontSize(20);
+}
+
+float SliderTextBox::value(sdlgui::Widget& parent) {
+    auto slider = parent.gfind<sdlgui::Slider>(m_sliderName);
+    if (!slider) {
+        return m_defaultValue;
+    }
+    return slider->value();
+}
+
 GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     : m_app(app)
     , sdlgui::Screen(pwindow, sdlgui::Vector2i(width, height), "Canvas")
@@ -73,9 +118,35 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             m_app->applyScaleFilter();
         });
 
-        nwindow.button("Reverb", [this] {
+        ////////////////
+
+        auto& reverbPopup = nwindow.popupbutton("Reverb")
+            .popup()
+            .withLayout<sdlgui::GroupLayout>();
+
+        m_decayWidget = std::make_unique<SliderTextBox>(
+            reverbPopup,
+            0.5f,
+            "Decay",
+            "reverb-decay-slider",
+            "reverb-decay-textbox"
+        );
+
+        m_dampingWidget = std::make_unique<SliderTextBox>(
+            reverbPopup,
+            0.5f,
+            "Damping",
+            "reverb-damping-slider",
+            "reverb-damping-textbox"
+        );
+
+        reverbPopup.button("Apply", [this, &reverbPopup] {
+            std::cout << m_decayWidget->value(reverbPopup) << std::endl;
+            std::cout << m_dampingWidget->value(reverbPopup) << std::endl;
             m_app->applyReverb();
         });
+
+        ////////////////
 
         nwindow.button("Chorus", [this] {
             m_app->applyChorus();

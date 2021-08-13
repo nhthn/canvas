@@ -98,6 +98,24 @@ private:
     void sendAmplitudesToAudioThread();
 };
 
+class SliderTextBox {
+public:
+    SliderTextBox(
+        sdlgui::Widget& parent,
+        float value,
+        std::string label,
+        std::string sliderName,
+        std::string textBoxName
+    );
+
+    float value(sdlgui::Widget& parent);
+
+private:
+    float m_defaultValue;
+    std::string m_sliderName;
+    std::string m_textBoxName;
+};
+
 class GUI : public sdlgui::Screen
 {
 public:
@@ -122,4 +140,7 @@ private:
     sdlgui::Button* m_drawButton;
     sdlgui::Button* m_eraseButton;
     sdlgui::Button* m_scaleFilterButton;
+
+    std::unique_ptr<SliderTextBox> m_decayWidget;
+    std::unique_ptr<SliderTextBox> m_dampingWidget;
 };
