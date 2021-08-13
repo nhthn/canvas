@@ -55,7 +55,8 @@ public:
     void setMode(Mode mode) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 
-    void scaleFilter();
+    void applyScaleFilter();
+    void applyReverb();
 
 private:
     std::shared_ptr<RingBuffer<float>> m_ringBuffer;

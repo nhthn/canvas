@@ -25,8 +25,14 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             m_app->setMode(App::Mode::Erase);
         }).withFlags(sdlgui::Button::RadioButton);
 
+        nwindow.label("Filters");
+
         m_scaleFilterButton = &nwindow.button("Scale Filter", [this] {
-            m_app->scaleFilter();
+            m_app->applyScaleFilter();
+        });
+
+        nwindow.button("Reverb", [this] {
+            m_app->applyReverb();
         });
     }
 
@@ -72,7 +78,37 @@ void App::run()
     mainLoop();
 }
 
-void App::scaleFilter()
+void App::applyReverb()
+{
+    float decayRate = 0.99;
+    for (int row = 0; row < k_imageHeight; row++) {
+        float lastRed = 0;
+        float lastGreen = 0;
+        float lastBlue = 0;
+        for (int column = 0; column < k_imageWidth; column++) {
+            int index = row * k_imageWidth + column;
+            int color = m_pixels[index];
+            float red = ((color & 0xff0000) >> 16) / 255.0;
+            float green = ((color & 0x00ff00) >> 8) / 255.0;
+            float blue = ((color & 0x0000ff) >> 0) / 255.0;
+            red = std::max(lastRed * decayRate, red);
+            green = std::max(lastGreen * decayRate, green);
+            blue = std::max(lastBlue * decayRate, blue);
+            color = (
+                0xff000000
+                + (static_cast<int>(red * 255) << 16)
+                + (static_cast<int>(green * 255) << 8)
+                + (static_cast<int>(blue * 255) << 0)
+            );
+            m_pixels[index] = color;
+            lastRed = red;
+            lastGreen = green;
+            lastBlue = blue;
+        }
+    }
+}
+
+void App::applyScaleFilter()
 {
     int scale[12] = { 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1 };
     for (int row = 0; row < k_imageHeight; row++) {
