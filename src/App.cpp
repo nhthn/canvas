@@ -141,6 +141,30 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     ////////////////
 
+    nwindow.label("Playback");
+
+    auto& transport = nwindow.widget().withLayout<sdlgui::BoxLayout>(
+        sdlgui::Orientation::Horizontal, sdlgui::Alignment::Middle, 0, 5
+    );
+
+    auto& playButton = transport.button("", ENTYPO_ICON_PLAY, [this] {
+        m_app->startPlayback();
+    }).withBackgroundColor(sdlgui::Color(0, 255, 0, 25));
+    playButton.setFixedSize(sdlgui::Vector2i { 25, 25 });
+
+    auto& stopButton = transport.button("", ENTYPO_ICON_STOP, [this] {
+        m_app->stopPlayback();
+    }).withBackgroundColor(sdlgui::Color(255, 0, 0, 25));
+    stopButton.setFixedSize(sdlgui::Vector2i { 25, 25 });
+
+    transport.label("Speed");
+
+    transport.slider(0.5, [this] (sdlgui::Slider* slider, float value) {
+        m_app->setSpeedInPixelsPerSecond(value * 200);
+    });
+
+    ////////////////
+
     nwindow.label("Filters");
 
     nwindow.button("Clear", [this] {
@@ -309,6 +333,17 @@ void App::run()
 {
     m_audioBackend.run();
     mainLoop();
+}
+
+void App::startPlayback()
+{
+    m_playing = true;
+}
+
+void App::stopPlayback()
+{
+    m_position = 0;
+    m_playing = false;
 }
 
 void App::clear()
@@ -769,9 +804,11 @@ void App::mainLoop()
 
         SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr);
 
-        SDL_Rect fillRect = { static_cast<int>(static_cast<float>(m_position) * k_windowWidth / k_imageWidth), 0, 2, k_windowHeight };
-        SDL_SetRenderDrawColor(m_renderer, 0xff, 0xff, 0xff, 0xff);
-        SDL_RenderFillRect(m_renderer, &fillRect);
+        if (m_playing) {
+            SDL_Rect fillRect = { static_cast<int>(static_cast<float>(m_position) * k_windowWidth / k_imageWidth), 0, 2, k_windowHeight };
+            SDL_SetRenderDrawColor(m_renderer, 0xff, 0xff, 0xff, 0xff);
+            SDL_RenderFillRect(m_renderer, &fillRect);
+        }
 
         m_gui->drawAll();
 
@@ -780,9 +817,11 @@ void App::mainLoop()
         int delayInMilliseconds = 16;
         SDL_Delay(delayInMilliseconds);
 
-        m_position += m_speedInPixelsPerSecond * delayInMilliseconds / 1000;
-        while (m_position > k_imageWidth) {
-            m_position -= k_imageWidth;
+        if (m_playing) {
+            m_position += m_speedInPixelsPerSecond * delayInMilliseconds / 1000;
+            while (m_position > k_imageWidth) {
+                m_position -= k_imageWidth;
+            }
         }
     }
 }
@@ -791,10 +830,17 @@ void App::sendAmplitudesToAudioThread()
 {
     int position = m_position;
     float amplitudes[2 * k_imageHeight];
-    for (int i = 0; i < k_imageHeight; i++) {
-        int index = k_imageWidth * (k_imageHeight - 1 - i) + position;
-        amplitudes[2 * i] = (m_pixels[index] & 0x000000ff) / 255.0 * m_overallGain;
-        amplitudes[2 * i + 1] = ((m_pixels[index] & 0x00ff0000) >> 16) / 255.0 * m_overallGain;
+
+    if (!m_playing) {
+        for (int i = 0; i < 2 * k_imageHeight; i++) {
+            amplitudes[i] = 0;
+        }
+    } else {
+        for (int i = 0; i < k_imageHeight; i++) {
+            int index = k_imageWidth * (k_imageHeight - 1 - i) + position;
+            amplitudes[2 * i] = (m_pixels[index] & 0x000000ff) / 255.0 * m_overallGain;
+            amplitudes[2 * i + 1] = ((m_pixels[index] & 0x00ff0000) >> 16) / 255.0 * m_overallGain;
+        }
     }
 
     m_ringBuffer->write(amplitudes, 2 * k_imageHeight);

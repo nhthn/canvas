@@ -63,6 +63,12 @@ public:
     void setOpacity(float opacity) { m_opacity = opacity; }
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
+    void startPlayback();
+    void stopPlayback();
+    void setSpeedInPixelsPerSecond(float speedInPixelsPerSecond) {
+        m_speedInPixelsPerSecond = speedInPixelsPerSecond;
+    };
+
     void clear();
     void applyScaleFilter(int root, int scaleClass);
     void applyReverb(float decay, float damping, bool reverse);
@@ -91,7 +97,8 @@ private:
     int m_lastMouseX = -1;
     int m_lastMouseY = -1;
 
-    float m_position;
+    bool m_playing = false;
+    float m_position = 0;
     float m_speedInPixelsPerSecond = 100;
 
     float m_overallGain = 0.05;
