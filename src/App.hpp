@@ -97,9 +97,9 @@ private:
     void initRenderer();
     void initGUI();
     void mainLoop();
-    void drawPixel(int x, int y, int color);
-    void stampCircle(int x, int y, int radius, int color);
-    void drawLine(int x1, int y1, int x2, int y2, int radius, int color);
+    void drawPixel(int x, int y, float red, float green, float blue, float alpha);
+    void stampFuzzyCircle(int x, int y, int radius, float red, float green, float blue, float alpha);
+    void drawLine(int x1, int y1, int x2, int y2, int radius, float red, float green, float blue, float alpha);
     void handleEvents();
     void handleEventDrawOrErase(SDL_Event& event);
     void handleEventHorizontalLine(SDL_Event& event);

@@ -568,7 +568,7 @@ void App::initGUI()
     m_gui = std::make_unique<GUI>(this, m_window, k_windowWidth, k_windowHeight);
 }
 
-void App::drawPixel(int x, int y, int color)
+void App::drawPixel(int x, int y, float red, float green, float blue, float alpha)
 {
     if (!((0 <= y) && (y < k_imageHeight))) {
         return;
@@ -576,37 +576,47 @@ void App::drawPixel(int x, int y, int color)
     if (!((0 <= x) && (x < k_imageWidth))) {
         return;
     }
-    m_pixels[y * k_imageWidth + x] = color;
+    int index = y * k_imageWidth + x;
+    int color = m_pixels[index];
+    float newRed = getRedNormalized(color);
+    float newGreen = getGreenNormalized(color);
+    float newBlue = getBlueNormalized(color);
+    newRed = newRed * (1 - alpha) + red * alpha;
+    newGreen = newGreen * (1 - alpha) + green * alpha;
+    newBlue = newBlue * (1 - alpha) + blue * alpha;
+    m_pixels[index] = colorFromNormalized(newRed, newGreen, newBlue);
 }
 
-void App::stampCircle(int x, int y, int radius, int color)
+void App::stampFuzzyCircle(int x, int y, int radius, float red, float green, float blue, float alpha)
 {
     for (int dx = -radius; dx <= radius; dx++) {
         for (int dy = -radius; dy <= radius; dy++) {
             if (dx * dx + dy * dy <= radius * radius) {
-                drawPixel(x + dx, y + dy, color);
+                float pixelRadius = std::sqrt(dx * dx + dy * dy);
+                float pixelAlpha = alpha * (1 - pixelRadius / radius);
+                drawPixel(x + dx, y + dy, red, green, blue, pixelAlpha);
             }
         }
     }
 }
 
-void App::drawLine(int x1, int y1, int x2, int y2, int radius, int color)
+void App::drawLine(int x1, int y1, int x2, int y2, int radius, float red, float green, float blue, float alpha)
 {
     int dx = x2 - x1;
     int dy = y2 - y1;
     if (dx == 0 && dy == 0) {
-        stampCircle(x1, y1, radius, color);
+        stampFuzzyCircle(x1, y1, radius, red, green, blue, alpha);
         return;
     }
     if (std::abs(dx) > std::abs(dy)) {
         for (int x = std::min(x1, x2); x <= std::max(x1, x2); x++) {
             float y = y1 + std::round(static_cast<float>(x - x1) * dy / dx);
-            stampCircle(x, static_cast<int>(y), radius, color);
+            stampFuzzyCircle(x, static_cast<int>(y), radius, red, green, blue, alpha);
         }
     } else {
         for (int y = std::min(y1, y2); y <= std::max(y1, y2); y++) {
             float x = x1 + std::round(static_cast<float>(y - y1) * dx / dy);
-            stampCircle(static_cast<int>(x), y, radius, color);
+            stampFuzzyCircle(static_cast<int>(x), y, radius, red, green, blue, alpha);
         }
     }
 }
@@ -631,11 +641,14 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                 static_cast<float>(event.motion.y)
                 * k_imageHeight / k_windowHeight
             );
-            stampCircle(
+            stampFuzzyCircle(
                 mouseX,
                 mouseY,
                 5,
-                m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
+                m_mode == App::Mode::Erase ? 0 : 1,
+                0,
+                m_mode == App::Mode::Erase ? 0 : 1,
+                1
             );
         }
         break;
@@ -656,7 +669,10 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                     mouseX,
                     mouseY,
                     5,
-                    m_mode == App::Mode::Erase ? 0xff000000 : 0xffff00ff
+                    m_mode == App::Mode::Erase ? 0 : 1,
+                    0,
+                    m_mode == App::Mode::Erase ? 0 : 1,
+                    1
                 );
             }
             m_lastMouseX = mouseX;
