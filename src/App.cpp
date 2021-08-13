@@ -188,14 +188,15 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         .popup()
         .withLayout<sdlgui::GroupLayout>();
 
-    m_decayWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Decay");
-
-    m_dampingWidget = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
+    m_reverbDecay = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Decay");
+    m_reverbDamping = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
+    m_reverbReverse = std::make_unique<sdlgui::CheckBox>(&reverbPopup, "Reverse");
 
     reverbPopup.button("Apply", [this] {
         m_app->applyReverb(
-            m_decayWidget->value(),
-            m_dampingWidget->value()
+            m_reverbDecay->value(),
+            m_reverbDamping->value(),
+            m_reverbReverse->checked()
         );
     });
 
@@ -317,7 +318,7 @@ void App::clear()
     }
 }
 
-void App::applyReverb(float decay, float damping)
+void App::applyReverb(float decay, float damping, bool reverse)
 {
     float baseDecayLength = 1 + (decay * k_imageWidth * 2);
     for (int row = 0; row < k_imageHeight; row++) {
@@ -329,7 +330,10 @@ void App::applyReverb(float decay, float damping)
         float lastGreen = 0;
         float lastBlue = 0;
         for (int column = 0; column < k_imageWidth; column++) {
-            int index = row * k_imageWidth + column;
+            int index = (
+                row * k_imageWidth
+                + (reverse ? k_imageWidth - 1 - column : column)
+            );
             int color = m_pixels[index];
             float red = getRedNormalized(color);
             float green = getGreenNormalized(color);

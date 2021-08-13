@@ -65,7 +65,7 @@ public:
 
     void clear();
     void applyScaleFilter(int root, int scaleClass);
-    void applyReverb(float decay, float damping);
+    void applyReverb(float decay, float damping, bool reverse);
     void applyChorus(float rate, float depth);
     void applyTremolo(float rate, float depth, int shape, float stereo);
     void applyHarmonics(
@@ -169,8 +169,9 @@ private:
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterRootDropDown;
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterScaleClassDropDown;
 
-    std::unique_ptr<SliderTextBox> m_decayWidget;
-    std::unique_ptr<SliderTextBox> m_dampingWidget;
+    std::unique_ptr<SliderTextBox> m_reverbDecay;
+    std::unique_ptr<SliderTextBox> m_reverbDamping;
+    std::unique_ptr<sdlgui::CheckBox> m_reverbReverse;
 
     std::unique_ptr<SliderTextBox> m_chorusRate;
     std::unique_ptr<SliderTextBox> m_chorusDepth;
