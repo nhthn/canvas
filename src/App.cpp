@@ -16,15 +16,16 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         auto& nwindow = window("Toolbox", sdlgui::Vector2i{15, 15})
             .withLayout<sdlgui::GroupLayout>();
 
-        nwindow.button("Draw", [this] {
+        m_drawButton = &nwindow.button("Draw", [this] {
             m_app->setMode(App::Mode::Draw);
-        }).withFlags(sdlgui::Button::ToggleButton);
+        }).withFlags(sdlgui::Button::RadioButton);
+        m_drawButton->setPushed(true);
 
-        nwindow.button("Erase", [this] {
+        m_eraseButton = &nwindow.button("Erase", [this] {
             m_app->setMode(App::Mode::Erase);
-        }).withFlags(sdlgui::Button::ToggleButton);
+        }).withFlags(sdlgui::Button::RadioButton);
 
-        nwindow.button("Scale Filter", [this] {
+        m_scaleFilterButton = &nwindow.button("Scale Filter", [this] {
             m_app->scaleFilter();
         });
     }
@@ -124,7 +125,7 @@ void App::initGUI()
     m_gui = std::make_unique<GUI>(this, m_window, k_windowWidth, k_windowHeight);
 }
 
-void App::drawPixel(int x, int y)
+void App::drawPixel(int x, int y, int color)
 {
     if (!((0 <= y) && (y < k_imageHeight))) {
         return;
@@ -132,37 +133,37 @@ void App::drawPixel(int x, int y)
     if (!((0 <= x) && (x < k_imageWidth))) {
         return;
     }
-    m_pixels[y * k_imageWidth + x] = 0xffffffff;
+    m_pixels[y * k_imageWidth + x] = color;
 }
 
-void App::stampCircle(int x, int y, int radius)
+void App::stampCircle(int x, int y, int radius, int color)
 {
     for (int dx = -radius; dx <= radius; dx++) {
         for (int dy = -radius; dy <= radius; dy++) {
             if (dx * dx + dy * dy <= radius * radius) {
-                drawPixel(x + dx, y + dy);
+                drawPixel(x + dx, y + dy, color);
             }
         }
     }
 }
 
-void App::drawLine(int x1, int y1, int x2, int y2, int radius)
+void App::drawLine(int x1, int y1, int x2, int y2, int radius, int color)
 {
     int dx = x2 - x1;
     int dy = y2 - y1;
     if (dx == 0 && dy == 0) {
-        stampCircle(x1, y1, radius);
+        stampCircle(x1, y1, radius, color);
         return;
     }
     if (std::abs(dx) > std::abs(dy)) {
         for (int x = std::min(x1, x2); x <= std::max(x1, x2); x++) {
             float y = y1 + std::round(static_cast<float>(x - x1) * dy / dx);
-            stampCircle(x, static_cast<int>(y), radius);
+            stampCircle(x, static_cast<int>(y), radius, color);
         }
     } else {
         for (int y = std::min(y1, y2); y <= std::max(y1, y2); y++) {
             float x = x1 + std::round(static_cast<float>(y - y1) * dx / dy);
-            stampCircle(static_cast<int>(x), y, radius);
+            stampCircle(static_cast<int>(x), y, radius, color);
         }
     }
 }
@@ -171,7 +172,10 @@ void App::handleEvents()
 {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        m_gui->onEvent(event);
+        bool guiProcessedEvent = m_gui->onEvent(event);
+        if (guiProcessedEvent) {
+            continue;
+        }
         switch (event.type) {
         case SDL_QUIT:
             exit(0);
@@ -186,6 +190,20 @@ void App::handleEvents()
                 m_leftMouseButtonDown = true;
                 m_lastMouseX = -1;
                 m_lastMouseY = -1;
+                int mouseX = (
+                    static_cast<float>(event.motion.x)
+                    * k_imageWidth / k_windowWidth
+                );
+                int mouseY = (
+                    static_cast<float>(event.motion.y)
+                    * k_imageHeight / k_windowHeight
+                );
+                stampCircle(
+                    mouseX,
+                    mouseY,
+                    5,
+                    m_mode == App::Mode::Erase ? 0x00000000 : 0xffffffff
+                );
             }
             break;
         case SDL_MOUSEMOTION:
@@ -199,7 +217,14 @@ void App::handleEvents()
                     * k_imageHeight / k_windowHeight
                 );
                 if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
-                    drawLine(m_lastMouseX, m_lastMouseY, mouseX, mouseY, 5);
+                    drawLine(
+                        m_lastMouseX,
+                        m_lastMouseY,
+                        mouseX,
+                        mouseY,
+                        5,
+                        m_mode == App::Mode::Erase ? 0x00000000 : 0xffffffff
+                    );
                 }
                 m_lastMouseX = mouseX;
                 m_lastMouseY = mouseY;

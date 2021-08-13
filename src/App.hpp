@@ -84,9 +84,9 @@ private:
     void initRenderer();
     void initGUI();
     void mainLoop();
-    void drawPixel(int x, int y);
-    void stampCircle(int x, int y, int radius);
-    void drawLine(int x1, int y1, int x2, int y2, int radius);
+    void drawPixel(int x, int y, int color);
+    void stampCircle(int x, int y, int radius, int color);
+    void drawLine(int x1, int y1, int x2, int y2, int radius, int color);
     void handleEvents();
     void sendAmplitudesToAudioThread();
 };
@@ -112,4 +112,7 @@ public:
 
 private:
     App* m_app;
+    sdlgui::Button* m_drawButton;
+    sdlgui::Button* m_eraseButton;
+    sdlgui::Button* m_scaleFilterButton;
 };
