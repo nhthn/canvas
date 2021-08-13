@@ -61,6 +61,7 @@ public:
     void setGreen(float green) { m_green = green; }
     void setBlue(float blue) { m_blue = blue; }
     void setOpacity(float opacity) { m_opacity = opacity; }
+    void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
     void clear();
     void applyScaleFilter(int root, int scaleClass);
@@ -101,6 +102,7 @@ private:
     float m_green;
     float m_blue;
     float m_opacity;
+    float m_brushSize;
 
     void initSDL();
     void initWindow();
@@ -158,6 +160,7 @@ private:
     sdlgui::Button* m_eraseButton;
     sdlgui::Button* m_scaleFilterButton;
 
+    std::unique_ptr<SliderTextBox> m_brushSize;
     std::unique_ptr<SliderTextBox> m_colorRed;
     std::unique_ptr<SliderTextBox> m_colorGreen;
     std::unique_ptr<SliderTextBox> m_colorBlue;

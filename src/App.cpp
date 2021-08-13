@@ -112,6 +112,12 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     ////////////////
 
+    m_brushSize = std::make_unique<SliderTextBox>(
+        nwindow, 0.1f, "Size", [this](float normalizedSize) {
+            float brushSize = 1 + 99 * normalizedSize;
+            m_app->setBrushSize(brushSize);
+        }
+    );
     m_colorRed = std::make_unique<SliderTextBox>(
         nwindow, 1.0f, "Red", [this](float red) {
             m_app->setRed(red);
@@ -648,6 +654,8 @@ void App::drawLine(int x1, int y1, int x2, int y2, int radius, float red, float 
 }
 
 void App::handleEventDrawOrErase(SDL_Event& event) {
+    int radius = m_brushSize / 2;
+
     switch (event.type) {
     case SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
@@ -670,7 +678,7 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
             stampFuzzyCircle(
                 mouseX,
                 mouseY,
-                5,
+                radius,
                 m_mode == App::Mode::Erase ? 0 : m_red,
                 m_mode == App::Mode::Erase ? 0 : m_green,
                 m_mode == App::Mode::Erase ? 0 : m_blue,
@@ -694,7 +702,7 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                     m_lastMouseY,
                     mouseX,
                     mouseY,
-                    5,
+                    radius,
                     m_mode == App::Mode::Erase ? 0 : m_red,
                     m_mode == App::Mode::Erase ? 0 : m_green,
                     m_mode == App::Mode::Erase ? 0 : m_blue,
