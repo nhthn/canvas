@@ -114,8 +114,39 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             m_app->clear();
         });
 
-        m_scaleFilterButton = &nwindow.button("Scale Filter", [this] {
-            m_app->applyScaleFilter();
+        ////////////////
+
+        auto& scaleFilterPopup = nwindow.popupbutton("Scale Filter")
+            .popup()
+            .withLayout<sdlgui::GroupLayout>();
+
+        m_scaleFilterRootDropDown = std::make_unique<sdlgui::DropdownBox>(
+            &scaleFilterPopup,
+            std::vector<std::string> {
+                "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+            }
+        );
+
+        m_scaleFilterScaleClassDropDown = std::make_unique<sdlgui::DropdownBox>(
+            &scaleFilterPopup,
+            std::vector<std::string> {
+                "Major",
+                "Minor",
+                "Acoustic",
+                "Harmonic Major",
+                "Harmonic Minor",
+                "Whole Tone",
+                "Octatonic",
+                "Hexatonic (Messiaen)"
+            }
+        );
+        m_scaleFilterScaleClassDropDown->withFixedWidth(240);
+
+        scaleFilterPopup.button("Apply", [this] {
+            m_app->applyScaleFilter(
+                m_scaleFilterRootDropDown->selectedIndex(),
+                m_scaleFilterScaleClassDropDown->selectedIndex()
+            );
         });
 
         ////////////////
@@ -315,11 +346,22 @@ void App::applyChorus(float rate, float depth)
 }
 
 
-void App::applyScaleFilter()
+void App::applyScaleFilter(int root, int scaleClass)
 {
-    int scale[12] = { 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1 };
+    int scale[][12] = {
+        { 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1 }, // Major
+        { 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0 }, // Minor
+        { 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0 }, // Acoustic
+        { 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1 }, // Harmonic Major
+        { 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1 }, // Harmonic Minor
+        { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 }, // Whole Tone
+        { 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1 }, // Octatonic
+        { 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1 }, // Hexatonic (Messiaen)
+    };
     for (int row = 0; row < k_imageHeight; row++) {
-        if (row % 2 == 1 || scale[row / 2 % 12] == 0) {
+        // Subtract 6 because lowest frequency is A.
+        int degreeIn24EDO = k_imageHeight - 1 - row - 6;
+        if (degreeIn24EDO % 2 == 1 || scale[scaleClass][(degreeIn24EDO / 2 - root) % 12] == 0) {
             for (int column = 0; column < k_imageWidth; column++) {
                 m_pixels[row * k_imageWidth + column] = 0;
             }

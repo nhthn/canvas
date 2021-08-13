@@ -58,7 +58,7 @@ public:
     Mode getMode() { return m_mode; }
 
     void clear();
-    void applyScaleFilter();
+    void applyScaleFilter(int root, int scaleClass);
     void applyReverb(float decay, float damping);
     void applyChorus(float rate, float depth);
 
@@ -140,6 +140,9 @@ private:
     sdlgui::Button* m_drawButton;
     sdlgui::Button* m_eraseButton;
     sdlgui::Button* m_scaleFilterButton;
+
+    std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterRootDropDown;
+    std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterScaleClassDropDown;
 
     std::unique_ptr<SliderTextBox> m_decayWidget;
     std::unique_ptr<SliderTextBox> m_dampingWidget;
