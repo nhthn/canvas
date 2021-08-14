@@ -12,6 +12,9 @@ public:
     void setTargetAmplitudeLeft(float amplitude) { m_targetAmplitudeLeft = amplitude; };
     void setTargetAmplitudeRight(float amplitude) { m_targetAmplitudeRight = amplitude; };
 
+    void setPDMode(int pdMode) { m_pdMode = pdMode; };
+    void setPDDistort(float pdDistort) { m_pdDistort = pdDistort; };
+
 private:
     float m_phase = 0;
     const float m_frequency;
@@ -19,6 +22,9 @@ private:
     float m_targetAmplitudeLeft = 0.0;
     float m_amplitudeRight = 0.0;
     float m_targetAmplitudeRight = 0.0;
+
+    int m_pdMode = 0;
+    float m_pdDistort = 0;
 };
 
 class Synth {

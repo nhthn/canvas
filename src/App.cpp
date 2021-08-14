@@ -167,6 +167,24 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     ////////////////
 
+    nwindow.label("Synth");
+
+    m_pdMode = std::make_unique<sdlgui::DropdownBox>(
+        &nwindow,
+        std::vector<std::string> { "Pulsar PD", "Saw PD" }
+    );
+    m_pdMode->setCallback([this](int pdMode) {
+        m_app->setPDMode(pdMode);
+    });
+
+    m_pdDistort = std::make_unique<SliderTextBox>(
+        nwindow, 0.0f, "Distort", [this](float pdDistort) {
+            m_app->setPDDistort(pdDistort);
+        }
+    );
+
+    ////////////////
+
     nwindow.label("Filters");
 
     nwindow.button("Clear", [this] {
@@ -852,19 +870,25 @@ void App::mainLoop()
 void App::sendAmplitudesToAudioThread()
 {
     int position = m_position;
-    float amplitudes[2 * k_imageHeight];
+
+    int amplitudeOffset = 2;
+    int size = amplitudeOffset + 2 * k_imageHeight;
+    float data[size];
+
+    data[0] = m_pdMode;
+    data[1] = m_pdDistort;
 
     if (!m_playing) {
         for (int i = 0; i < 2 * k_imageHeight; i++) {
-            amplitudes[i] = 0;
+            data[amplitudeOffset + i] = 0;
         }
     } else {
         for (int i = 0; i < k_imageHeight; i++) {
             int index = k_imageWidth * (k_imageHeight - 1 - i) + position;
-            amplitudes[2 * i] = (m_pixels[index] & 0x000000ff) / 255.0 * m_overallGain;
-            amplitudes[2 * i + 1] = ((m_pixels[index] & 0x00ff0000) >> 16) / 255.0 * m_overallGain;
+            data[amplitudeOffset + 2 * i] = (m_pixels[index] & 0x000000ff) / 255.0 * m_overallGain;
+            data[amplitudeOffset + 2 * i + 1] = ((m_pixels[index] & 0x00ff0000) >> 16) / 255.0 * m_overallGain;
         }
     }
 
-    m_ringBuffer->write(amplitudes, 2 * k_imageHeight);
+    m_ringBuffer->write(data, 2 + 2 * k_imageHeight);
 }

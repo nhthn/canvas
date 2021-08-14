@@ -69,6 +69,9 @@ public:
         m_speedInPixelsPerSecond = speedInPixelsPerSecond;
     };
 
+    void setPDMode(int pdMode) { m_pdMode = pdMode; };
+    void setPDDistort(float pdDistort) { m_pdDistort = pdDistort; };
+
     void clear();
     void applyScaleFilter(int root, int scaleClass);
     void applyReverb(float decay, float damping, bool reverse);
@@ -110,6 +113,9 @@ private:
     float m_blue;
     float m_opacity;
     float m_brushSize;
+
+    int m_pdMode = 0;
+    float m_pdDistort = 0.0;
 
     void initSDL();
     void initWindow();
@@ -174,6 +180,9 @@ private:
     std::unique_ptr<SliderTextBox> m_colorGreen;
     std::unique_ptr<SliderTextBox> m_colorBlue;
     std::unique_ptr<SliderTextBox> m_colorOpacity;
+
+    std::unique_ptr<sdlgui::DropdownBox> m_pdMode;
+    std::unique_ptr<SliderTextBox> m_pdDistort;
 
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterRootDropDown;
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterScaleClassDropDown;

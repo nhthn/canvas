@@ -6,6 +6,28 @@ float k_sineTable2048[2048] = {
 #include "sine_table_2048.txt"
 };
 
+float distortPhase(float phase, int mode, float distort)
+{
+    switch (mode) {
+    case 0: // Pulsar
+        return std::min(phase * (1 + 10 * distort), 1.f);
+    case 1: // Saw
+        {
+            float breakpoint = 0.25 * (1 - distort * 0.9);
+            float outerSlope = 0.25 / breakpoint;
+            float innerSlope = 0.5 / (1 - breakpoint * 2);
+            if (phase < breakpoint) {
+                return phase * outerSlope;
+            } else if (phase >= 1 - breakpoint) {
+                return 1 - (1 - phase) * outerSlope;
+            } else {
+                return 0.5 + (phase - 0.5) * innerSlope;
+            }
+        }
+    }
+    return phase;
+}
+
 Oscillator::Oscillator(float frequency)
 : m_frequency(frequency)
 {
@@ -14,8 +36,9 @@ Oscillator::Oscillator(float frequency)
 void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
         m_phase = std::fmod(m_phase + m_frequency / 48000.0, 1.0);
-        int integerPhase = m_phase * 2048;
-        float frac = m_phase * 2048 - integerPhase;
+        float distortedPhase = std::fmod(distortPhase(m_phase, m_pdMode, m_pdDistort), 1.0);
+        int integerPhase = distortedPhase * 2048;
+        float frac = distortedPhase * 2048 - integerPhase;
         int integerPhase2 = (integerPhase + 1) % 2048;
         float amplitudeLeft = (
             m_amplitudeLeft * (1 - i / static_cast<float>(blockSize))
@@ -56,14 +79,19 @@ void Synth::process(
 ) {
     int count = m_ringBuffer->read();
     if (count > 0) {
-        int numOscillators = std::min(count / 2, static_cast<int>(m_oscillators.size()));
+        int amplitudeOffset = 2;
+        int numOscillators = std::min(
+            (count - amplitudeOffset) / 2, static_cast<int>(m_oscillators.size())
+        );
         for (int i = 0; i < numOscillators; i++) {
             m_oscillators[i]->setTargetAmplitudeLeft(
-                m_ringBuffer->getOutputBuffer()[2 * i]
+                m_ringBuffer->getOutputBuffer()[amplitudeOffset + 2 * i]
             );
             m_oscillators[i]->setTargetAmplitudeRight(
-                m_ringBuffer->getOutputBuffer()[2 * i + 1]
+                m_ringBuffer->getOutputBuffer()[amplitudeOffset + 2 * i + 1]
             );
+            m_oscillators[i]->setPDMode(m_ringBuffer->getOutputBuffer()[0]);
+            m_oscillators[i]->setPDDistort(m_ringBuffer->getOutputBuffer()[1]);
         }
     }
 
