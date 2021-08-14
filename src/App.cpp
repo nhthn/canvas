@@ -370,7 +370,9 @@ void App::initAudio()
         float** output_buffer,
         int numFrames
     ) {
-        m_synth->process(inChannels, outChannels, input_buffer, output_buffer, numFrames);
+        m_synth->processRealtime(
+            inChannels, outChannels, input_buffer, output_buffer, numFrames
+        );
     });
 }
 

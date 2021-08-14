@@ -72,6 +72,27 @@ Synth::Synth(float sampleRate, std::shared_ptr<RingBuffer<float>> ringBuffer)
     }
 }
 
+void Synth::updateFromRingBuffer()
+{
+    int count = m_ringBuffer->read();
+    if (count == 0) {
+        return;
+    }
+    auto buffer = m_ringBuffer->getOutputBuffer();
+    for (int i = 0; i < m_oscillators.size(); i++) {
+        m_oscillators[i]->setPDMode(buffer[0]);
+        m_oscillators[i]->setPDDistort(buffer[1]);
+    }
+    int amplitudeOffset = 2;
+    int numOscillators = std::min(
+        (count - amplitudeOffset) / 2, static_cast<int>(m_oscillators.size())
+    );
+    for (int i = 0; i < numOscillators; i++) {
+        m_oscillators[i]->setTargetAmplitudeLeft(buffer[amplitudeOffset + 2 * i]);
+        m_oscillators[i]->setTargetAmplitudeRight(buffer[amplitudeOffset + 2 * i + 1]);
+    }
+}
+
 void Synth::process(
     int input_channels,
     int output_channels,
@@ -79,29 +100,31 @@ void Synth::process(
     float** output_buffer,
     int frame_count
 ) {
-    int count = m_ringBuffer->read();
-    if (count > 0) {
-        auto buffer = m_ringBuffer->getOutputBuffer();
-        for (int i = 0; i < m_oscillators.size(); i++) {
-            m_oscillators[i]->setPDMode(buffer[0]);
-            m_oscillators[i]->setPDDistort(buffer[1]);
-        }
-        int amplitudeOffset = 2;
-        int numOscillators = std::min(
-            (count - amplitudeOffset) / 2, static_cast<int>(m_oscillators.size())
-        );
-        for (int i = 0; i < numOscillators; i++) {
-            m_oscillators[i]->setTargetAmplitudeLeft(buffer[amplitudeOffset + 2 * i]);
-            m_oscillators[i]->setTargetAmplitudeRight(buffer[amplitudeOffset + 2 * i + 1]);
-        }
+    if (input_channels != 2) {
+        std::cout << "Input channels is not 2. This shouldn't happen!" << std::endl;
+        exit(1);
+    }
+    if (output_channels != 2) {
+        std::cout << "Output channels is not 2. This shouldn't happen!" << std::endl;
+        exit(1);
     }
 
     for (int j = 0; j < frame_count; j++) {
         output_buffer[0][j] = 0;
         output_buffer[1][j] = 0;
     }
-
     for (auto& oscillator : m_oscillators) {
         oscillator->processAdd(output_buffer[0], output_buffer[1], frame_count);
     }
+}
+
+void Synth::processRealtime(
+    int inputChannels,
+    int outputChannels,
+    const float** inputBuffer,
+    float** outputBuffer,
+    int frameCount
+) {
+    updateFromRingBuffer();
+    process(inputChannels, outputChannels, inputBuffer, outputBuffer, frameCount);
 }

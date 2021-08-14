@@ -32,7 +32,17 @@ class Synth {
 public:
     Synth(float sampleRate, std::shared_ptr<RingBuffer<float>>(ringBuffer));
 
+    void updateFromRingBuffer();
+
     void process(
+        int input_channels,
+        int output_channels,
+        const float** input_buffer,
+        float** output_buffer,
+        int frame_count
+    );
+
+    void processRealtime(
         int input_channels,
         int output_channels,
         const float** input_buffer,
