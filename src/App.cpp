@@ -329,18 +329,6 @@ App::App()
             nextPowerOfTwo(k_windowHeight * 2)
         )
     )
-    , m_synth(m_ringBuffer)
-    , m_audioBackend(
-        [this](
-            int inChannels,
-            int outChannels,
-            const float** input_buffer,
-            float** output_buffer,
-            int numFrames
-        ) {
-            m_synth.process(inChannels, outChannels, input_buffer, output_buffer, numFrames);
-        }
-    )
 {
     initSDL();
     initWindow();
@@ -364,9 +352,25 @@ App::~App()
     delete m_pixels;
 }
 
-void App::run()
+void App::initAudio()
 {
     m_audioBackend.run();
+
+    m_synth = std::make_unique<Synth>(m_ringBuffer);
+    m_audioBackend.setCallback([this](
+        int inChannels,
+        int outChannels,
+        const float** input_buffer,
+        float** output_buffer,
+        int numFrames
+    ) {
+        m_synth->process(inChannels, outChannels, input_buffer, output_buffer, numFrames);
+    });
+}
+
+void App::run()
+{
+    initAudio();
     mainLoop();
 }
 

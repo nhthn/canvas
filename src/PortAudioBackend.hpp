@@ -3,14 +3,16 @@
 #include <functional>
 #include "portaudio.h"
 
-using AudioCallback = std::function<void(
-    int, int, const float**, float**, int
-)>;
+using AudioCallback = std::function<
+    void(int, int, const float**, float**, int)
+>;
 
 
 class PortAudioBackend {
 public:
-    PortAudioBackend(AudioCallback callback);
+    PortAudioBackend(
+        AudioCallback callback = [](int, int, const float**, float**, int) { }
+    );
 
     void run();
     void end();
@@ -19,6 +21,8 @@ public:
         float** output_buffer,
         int frame_count
     );
+
+    void setCallback(AudioCallback callback) { m_callback = callback; };
 
 private:
     AudioCallback m_callback;

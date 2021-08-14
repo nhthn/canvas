@@ -87,7 +87,7 @@ public:
 
 private:
     std::shared_ptr<RingBuffer<float>> m_ringBuffer;
-    Synth m_synth;
+    std::unique_ptr<Synth> m_synth;
     PortAudioBackend m_audioBackend;
 
     SDL_Window* m_window;
@@ -121,6 +121,7 @@ private:
     void initWindow();
     void initRenderer();
     void initGUI();
+    void initAudio();
     void mainLoop();
     void drawPixel(int x, int y, float red, float green, float blue, float alpha);
     void stampFuzzyCircle(int x, int y, int radius, float red, float green, float blue, float alpha);
