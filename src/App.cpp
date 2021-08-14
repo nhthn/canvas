@@ -699,7 +699,7 @@ void App::drawPixel(int x, int y, float red, float green, float blue, float alph
     m_pixels[index] = colorFromNormalized(newRed, newGreen, newBlue);
 }
 
-void App::stampFuzzyCircle(int x, int y, int radius, float red, float green, float blue, float alpha)
+void App::drawFuzzyCircle(int x, int y, int radius, float red, float green, float blue, float alpha)
 {
     for (int dx = -radius; dx <= radius; dx++) {
         for (int dy = -radius; dy <= radius; dy++) {
@@ -717,18 +717,18 @@ void App::drawLine(int x1, int y1, int x2, int y2, int radius, float red, float 
     int dx = x2 - x1;
     int dy = y2 - y1;
     if (dx == 0 && dy == 0) {
-        stampFuzzyCircle(x1, y1, radius, red, green, blue, alpha);
+        drawFuzzyCircle(x1, y1, radius, red, green, blue, alpha);
         return;
     }
     if (std::abs(dx) > std::abs(dy)) {
         for (int x = std::min(x1, x2); x <= std::max(x1, x2); x++) {
             float y = y1 + std::round(static_cast<float>(x - x1) * dy / dx);
-            stampFuzzyCircle(x, static_cast<int>(y), radius, red, green, blue, alpha);
+            drawFuzzyCircle(x, static_cast<int>(y), radius, red, green, blue, alpha);
         }
     } else {
         for (int y = std::min(y1, y2); y <= std::max(y1, y2); y++) {
             float x = x1 + std::round(static_cast<float>(y - y1) * dx / dy);
-            stampFuzzyCircle(static_cast<int>(x), y, radius, red, green, blue, alpha);
+            drawFuzzyCircle(static_cast<int>(x), y, radius, red, green, blue, alpha);
         }
     }
 }
@@ -756,7 +756,7 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                 static_cast<float>(event.motion.y)
                 * k_imageHeight / k_windowHeight
             );
-            stampFuzzyCircle(
+            drawFuzzyCircle(
                 mouseX,
                 mouseY,
                 radius,
