@@ -356,7 +356,9 @@ void App::initAudio()
 {
     m_audioBackend.run();
 
-    m_synth = std::make_unique<Synth>(m_ringBuffer);
+    float sampleRate = m_audioBackend.getSampleRate();
+
+    m_synth = std::make_unique<Synth>(sampleRate, m_ringBuffer);
     m_audioBackend.setCallback([this](
         int inChannels,
         int outChannels,

@@ -42,6 +42,8 @@ void PortAudioBackend::run() {
         )
     );
 
+    m_sample_rate = Pa_GetStreamInfo(m_stream)->sampleRate;
+
     handle_error(Pa_StartStream(m_stream));
 }
 

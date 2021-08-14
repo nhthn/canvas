@@ -28,14 +28,15 @@ float distortPhase(float phase, int mode, float distort)
     return phase;
 }
 
-Oscillator::Oscillator(float frequency)
-: m_frequency(frequency)
+Oscillator::Oscillator(float sampleRate, float frequency)
+    : m_sampleRate(sampleRate)
+    , m_frequency(frequency)
 {
 }
 
 void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
-        m_phase = std::fmod(m_phase + m_frequency / 48000.0, 1.0);
+        m_phase = std::fmod(m_phase + m_frequency / m_sampleRate, 1.0);
         float distortedPhase = std::fmod(distortPhase(m_phase, m_pdMode, m_pdDistort), 1.0);
         int integerPhase = distortedPhase * 2048;
         float frac = distortedPhase * 2048 - integerPhase;
@@ -59,13 +60,14 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     m_amplitudeRight = m_targetAmplitudeRight;
 }
 
-Synth::Synth(std::shared_ptr<RingBuffer<float>> ringBuffer)
-    : m_ringBuffer(ringBuffer)
+Synth::Synth(float sampleRate, std::shared_ptr<RingBuffer<float>> ringBuffer)
+    : m_sampleRate(sampleRate)
+    , m_ringBuffer(ringBuffer)
 {
     for (int i = 0; i < 239; i++) {
         float frequency = 55 * std::pow(2, i / 24.0);
         m_oscillators.push_back(
-            std::make_unique<Oscillator>(frequency)
+            std::make_unique<Oscillator>(m_sampleRate, frequency)
         );
     }
 }

@@ -14,6 +14,8 @@ public:
         AudioCallback callback = [](int, int, const float**, float**, int) { }
     );
 
+    float getSampleRate() { return m_sample_rate; };
+
     void run();
     void end();
     void process(
@@ -27,7 +29,8 @@ public:
 private:
     AudioCallback m_callback;
     PaStream* m_stream;
-    const float m_sample_rate = 48000.0f;
+    const float m_requested_sample_rate = 48000.0f;
+    float m_sample_rate = 48000.0f;
     const int m_block_size = 256;
 
     void handle_error(PaError error);
