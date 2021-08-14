@@ -81,19 +81,18 @@ void Synth::process(
 ) {
     int count = m_ringBuffer->read();
     if (count > 0) {
+        auto buffer = m_ringBuffer->getOutputBuffer();
+        for (int i = 0; i < m_oscillators.size(); i++) {
+            m_oscillators[i]->setPDMode(buffer[0]);
+            m_oscillators[i]->setPDDistort(buffer[1]);
+        }
         int amplitudeOffset = 2;
         int numOscillators = std::min(
             (count - amplitudeOffset) / 2, static_cast<int>(m_oscillators.size())
         );
         for (int i = 0; i < numOscillators; i++) {
-            m_oscillators[i]->setTargetAmplitudeLeft(
-                m_ringBuffer->getOutputBuffer()[amplitudeOffset + 2 * i]
-            );
-            m_oscillators[i]->setTargetAmplitudeRight(
-                m_ringBuffer->getOutputBuffer()[amplitudeOffset + 2 * i + 1]
-            );
-            m_oscillators[i]->setPDMode(m_ringBuffer->getOutputBuffer()[0]);
-            m_oscillators[i]->setPDDistort(m_ringBuffer->getOutputBuffer()[1]);
+            m_oscillators[i]->setTargetAmplitudeLeft(buffer[amplitudeOffset + 2 * i]);
+            m_oscillators[i]->setTargetAmplitudeRight(buffer[amplitudeOffset + 2 * i + 1]);
         }
     }
 
