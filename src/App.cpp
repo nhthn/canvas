@@ -99,13 +99,21 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     nwindow.withLayout<sdlgui::GroupLayout>();
 
-    m_drawButton = &nwindow.button("Draw", ENTYPO_ICON_PENCIL, [this] {
+    auto& brushButtons = nwindow.widget().withLayout<sdlgui::BoxLayout>(
+        sdlgui::Orientation::Horizontal, sdlgui::Alignment::Middle, 0, 5
+    );
+
+    m_drawButton = &brushButtons.button("Draw", ENTYPO_ICON_PENCIL, [this] {
         m_app->setMode(App::Mode::Draw);
     }).withFlags(sdlgui::Button::RadioButton);
     m_drawButton->setPushed(true);
 
-    nwindow.button("Erase", ENTYPO_ICON_ERASE, [this] {
+    brushButtons.button("Erase", [this] {
         m_app->setMode(App::Mode::Erase);
+    }).withFlags(sdlgui::Button::RadioButton);
+
+    brushButtons.button("Spray", [this] {
+        m_app->setMode(App::Mode::Spray);
     }).withFlags(sdlgui::Button::RadioButton);
 
     nwindow.button("— Horiz. Line", [this] {
@@ -329,6 +337,7 @@ App::App()
             nextPowerOfTwo(k_windowHeight * 2)
         )
     )
+    , m_randomEngine(m_randomDevice())
 {
     initSDL();
     initWindow();
@@ -733,9 +742,65 @@ void App::drawLine(int x1, int y1, int x2, int y2, int radius, float red, float 
     }
 }
 
-void App::handleEventDrawOrErase(SDL_Event& event) {
+void App::spray(
+    int x,
+    int y,
+    float radius,
+    float density,
+    float red,
+    float green,
+    float blue,
+    float alpha
+)
+{
+    std::uniform_real_distribution<> bipolar(-1.0, 1.0);
+    std::uniform_real_distribution<> unipolar(0.0, 1.0);
+    for (int i = 0; i < radius * radius * density; i++) {
+        float dx = radius * (
+            bipolar(m_randomEngine)
+            + bipolar(m_randomEngine)
+            + bipolar(m_randomEngine)
+        ) / 3.0f;
+        float dy = radius * (
+            bipolar(m_randomEngine)
+            + bipolar(m_randomEngine)
+            + bipolar(m_randomEngine)
+        ) / 3.0f;
+        float pixelAlpha = alpha * unipolar(m_randomEngine);
+        drawPixel(x + dx, y + dy, red, green, blue, pixelAlpha);
+    }
+}
+
+void App::sprayLine(int x1, int y1, int x2, int y2, int radius, float density, float red, float green, float blue, float alpha)
+{
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    if (dx == 0 && dy == 0) {
+        spray(x1, y1, radius, density, red, green, blue, alpha);
+        return;
+    }
+    if (std::abs(dx) > std::abs(dy)) {
+        for (int x = std::min(x1, x2); x <= std::max(x1, x2); x++) {
+            float y = y1 + std::round(static_cast<float>(x - x1) * dy / dx);
+            spray(x, static_cast<int>(y), radius, density, red, green, blue, alpha);
+        }
+    } else {
+        for (int y = std::min(y1, y2); y <= std::max(y1, y2); y++) {
+            float x = x1 + std::round(static_cast<float>(y - y1) * dx / dy);
+            spray(static_cast<int>(x), y, radius, density, red, green, blue, alpha);
+        }
+    }
+}
+
+void App::handleEventDrawEraseAndSpray(SDL_Event& event)
+{
     int toolbarWidth = m_gui->getWindowWidth();
     int radius = m_brushSize / 2;
+
+    float red = m_mode == App::Mode::Erase ? 0 : m_red;
+    float green = m_mode == App::Mode::Erase ? 0 : m_green;
+    float blue = m_mode == App::Mode::Erase ? 0 : m_blue;
+    float alpha = m_mode == App::Mode::Erase ? 1 : m_opacity;
 
     switch (event.type) {
     case SDL_MOUSEBUTTONUP:
@@ -756,15 +821,15 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                 static_cast<float>(event.motion.y)
                 * k_imageHeight / k_windowHeight
             );
-            drawFuzzyCircle(
-                mouseX,
-                mouseY,
-                radius,
-                m_mode == App::Mode::Erase ? 0 : m_red,
-                m_mode == App::Mode::Erase ? 0 : m_green,
-                m_mode == App::Mode::Erase ? 0 : m_blue,
-                m_mode == App::Mode::Erase ? 1 : m_opacity
-            );
+            if (m_mode == App::Mode::Spray) {
+                spray(
+                    mouseX, mouseY, radius, m_sprayDensity, red, green, blue, alpha
+                );
+            } else {
+                drawFuzzyCircle(
+                    mouseX, mouseY, radius, red, green, blue, alpha
+                );
+            }
         }
         break;
     case SDL_MOUSEMOTION:
@@ -778,17 +843,32 @@ void App::handleEventDrawOrErase(SDL_Event& event) {
                 * k_imageHeight / k_windowHeight
             );
             if (m_lastMouseX >= 0 && m_lastMouseY >= 0) {
-                drawLine(
-                    m_lastMouseX,
-                    m_lastMouseY,
-                    mouseX,
-                    mouseY,
-                    radius,
-                    m_mode == App::Mode::Erase ? 0 : m_red,
-                    m_mode == App::Mode::Erase ? 0 : m_green,
-                    m_mode == App::Mode::Erase ? 0 : m_blue,
-                    m_mode == App::Mode::Erase ? 1 : m_opacity
-                );
+                if (m_mode == App::Mode::Spray) {
+                    sprayLine(
+                        m_lastMouseX,
+                        m_lastMouseY,
+                        mouseX,
+                        mouseY,
+                        radius,
+                        m_sprayDensity,
+                        red,
+                        green,
+                        blue,
+                        alpha
+                    );
+                } else {
+                    drawLine(
+                        m_lastMouseX,
+                        m_lastMouseY,
+                        mouseX,
+                        mouseY,
+                        radius,
+                        red,
+                        green,
+                        blue,
+                        alpha
+                    );
+                }
             }
             m_lastMouseX = mouseX;
             m_lastMouseY = mouseY;
@@ -824,8 +904,12 @@ void App::handleEvents()
         if (event.type == SDL_QUIT) {
             exit(0);
         }
-        if (m_mode == App::Mode::Draw || m_mode == App::Mode::Erase) {
-            handleEventDrawOrErase(event);
+        if (
+            m_mode == App::Mode::Draw
+            || m_mode == App::Mode::Erase
+            || m_mode == App::Mode::Spray
+        ) {
+            handleEventDrawEraseAndSpray(event);
         }
         if (m_mode == App::Mode::HorizontalLine) {
             handleEventHorizontalLine(event);

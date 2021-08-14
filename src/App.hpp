@@ -50,6 +50,7 @@ public:
     enum class Mode {
         Draw,
         Erase,
+        Spray,
         HorizontalLine
     };
 
@@ -108,6 +109,8 @@ private:
 
     Mode m_mode = Mode::Draw;
 
+    float m_sprayDensity = 0.1;
+
     float m_red;
     float m_green;
     float m_blue;
@@ -116,6 +119,9 @@ private:
 
     int m_pdMode = 0;
     float m_pdDistort = 0.0;
+
+    std::random_device m_randomDevice;
+    std::mt19937 m_randomEngine;
 
     void initSDL();
     void initWindow();
@@ -126,8 +132,10 @@ private:
     void drawPixel(int x, int y, float red, float green, float blue, float alpha);
     void drawFuzzyCircle(int x, int y, int radius, float red, float green, float blue, float alpha);
     void drawLine(int x1, int y1, int x2, int y2, int radius, float red, float green, float blue, float alpha);
+    void spray(int x, int y, float radius, float density, float red, float green, float blue, float alpha);
+    void sprayLine(int x1, int y1, int x2, int y2, int radius, float density, float red, float green, float blue, float alpha);
     void handleEvents();
-    void handleEventDrawOrErase(SDL_Event& event);
+    void handleEventDrawEraseAndSpray(SDL_Event& event);
     void handleEventHorizontalLine(SDL_Event& event);
     void sendAmplitudesToAudioThread();
 };
