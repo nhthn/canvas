@@ -99,20 +99,16 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     nwindow.withLayout<sdlgui::GroupLayout>();
 
-    auto& brushButtons = nwindow.widget().withLayout<sdlgui::BoxLayout>(
-        sdlgui::Orientation::Horizontal, sdlgui::Alignment::Middle, 0, 5
-    );
-
-    m_drawButton = &brushButtons.button("Draw", ENTYPO_ICON_PENCIL, [this] {
+    m_drawButton = &nwindow.button("Draw", ENTYPO_ICON_PENCIL, [this] {
         m_app->setMode(App::Mode::Draw);
     }).withFlags(sdlgui::Button::RadioButton);
     m_drawButton->setPushed(true);
 
-    brushButtons.button("Erase", [this] {
+    nwindow.button("Erase", [this] {
         m_app->setMode(App::Mode::Erase);
     }).withFlags(sdlgui::Button::RadioButton);
 
-    brushButtons.button("Spray", [this] {
+    nwindow.button("Spray", [this] {
         m_app->setMode(App::Mode::Spray);
     }).withFlags(sdlgui::Button::RadioButton);
 
