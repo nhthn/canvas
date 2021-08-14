@@ -60,9 +60,8 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     m_amplitudeRight = m_targetAmplitudeRight;
 }
 
-Synth::Synth(float sampleRate, std::shared_ptr<RingBuffer<float>> ringBuffer)
+Synth::Synth(float sampleRate)
     : m_sampleRate(sampleRate)
-    , m_ringBuffer(ringBuffer)
 {
     for (int i = 0; i < 239; i++) {
         float frequency = 55 * std::pow(2, i / 24.0);
@@ -92,13 +91,13 @@ void Synth::setOscillatorAmplitude(int index, float amplitudeLeft, float amplitu
     m_oscillators[index]->setTargetAmplitudeRight(amplitudeRight);
 }
 
-void Synth::updateFromRingBuffer()
+void Synth::updateFromRingBuffer(std::shared_ptr<RingBuffer<float>> ringBuffer)
 {
-    int count = m_ringBuffer->read();
+    int count = ringBuffer->read();
     if (count == 0) {
         return;
     }
-    auto buffer = m_ringBuffer->getOutputBuffer();
+    auto buffer = ringBuffer->getOutputBuffer();
     setPDMode(buffer[0]);
     setPDDistort(buffer[1]);
     int amplitudeOffset = 2;
@@ -142,8 +141,9 @@ void Synth::processRealtime(
     int outputChannels,
     const float** inputBuffer,
     float** outputBuffer,
-    int frameCount
+    int frameCount,
+    std::shared_ptr<RingBuffer<float>> ringBuffer
 ) {
-    updateFromRingBuffer();
+    updateFromRingBuffer(ringBuffer);
     process(inputChannels, outputChannels, inputBuffer, outputBuffer, frameCount);
 }

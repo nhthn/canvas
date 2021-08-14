@@ -329,7 +329,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 App::App()
     : m_ringBuffer(
         std::make_shared<RingBuffer<float>>(
-            nextPowerOfTwo(k_windowHeight * 2)
+            nextPowerOfTwo(2 + k_windowHeight * 2)
         )
     )
     , m_randomEngine(m_randomDevice())
@@ -362,7 +362,7 @@ void App::initAudio()
 
     float sampleRate = m_audioBackend.getSampleRate();
 
-    m_synth = std::make_unique<Synth>(sampleRate, m_ringBuffer);
+    m_synth = std::make_unique<Synth>(sampleRate);
     m_audioBackend.setCallback([this](
         int inChannels,
         int outChannels,
@@ -371,7 +371,7 @@ void App::initAudio()
         int numFrames
     ) {
         m_synth->processRealtime(
-            inChannels, outChannels, input_buffer, output_buffer, numFrames
+            inChannels, outChannels, input_buffer, output_buffer, numFrames, m_ringBuffer
         );
     });
 }

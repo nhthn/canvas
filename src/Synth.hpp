@@ -30,7 +30,7 @@ private:
 
 class Synth {
 public:
-    Synth(float sampleRate, std::shared_ptr<RingBuffer<float>>(ringBuffer));
+    Synth(float sampleRate);
 
     int getNumOscillators() { return m_oscillators.size(); };
 
@@ -38,7 +38,7 @@ public:
     void setPDDistort(float pdDistort);
     void setOscillatorAmplitude(int index, float amplitudeLeft, float amplitudeRight);
 
-    void updateFromRingBuffer();
+    void updateFromRingBuffer(std::shared_ptr<RingBuffer<float>>);
 
     void process(
         int input_channels,
@@ -53,12 +53,12 @@ public:
         int output_channels,
         const float** input_buffer,
         float** output_buffer,
-        int frame_count
+        int frame_count,
+        std::shared_ptr<RingBuffer<float>>
     );
 
 private:
     const float m_sampleRate;
-    std::shared_ptr<RingBuffer<float>> m_ringBuffer;
     std::unique_ptr<uint32_t[]> m_pixels;
     std::vector<std::unique_ptr<Oscillator>> m_oscillators;
     float m_position = 0;
