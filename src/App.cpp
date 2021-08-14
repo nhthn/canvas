@@ -189,6 +189,14 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     ////////////////
 
+    nwindow.label("File");
+
+    nwindow.button("Render audio", [this] {
+        m_app->renderAudio("");
+    });
+
+    ////////////////
+
     nwindow.label("Filters");
 
     nwindow.button("Clear", [this] {
@@ -391,6 +399,69 @@ void App::stopPlayback()
 {
     m_position = 0;
     m_playing = false;
+}
+
+void App::renderAudio(std::string fileName)
+{
+    float sampleRate = m_audioBackend.getSampleRate();
+    int numFrames = (
+        static_cast<float>(k_imageWidth) / m_speedInPixelsPerSecond * sampleRate
+    );
+    float* audio = new float[numFrames * 2];
+
+    Synth synth(sampleRate);
+    synth.setPDMode(m_pdMode);
+    synth.setPDDistort(m_pdDistort);
+
+    int inChannels = 2;
+    int outChannels = 2;
+    int blockSize = 64;
+
+    float* leftInBuffer = new float[blockSize];
+    float* rightInBuffer = new float[blockSize];
+    const float* inBuffer[2] = { leftInBuffer, rightInBuffer };
+
+    float* leftOutBuffer = new float[blockSize];
+    float* rightOutBuffer = new float[blockSize];
+    float* outBuffer[2] = { leftInBuffer, rightInBuffer };
+
+    int sampleOffset = 0;
+    while (sampleOffset <= numFrames) {
+        int position = static_cast<float>(sampleOffset) * k_imageWidth / numFrames;
+        for (int i = 0; i < k_imageHeight; i++) {
+            int color = m_pixels[i * k_imageWidth + position];
+            synth.setOscillatorAmplitude(
+                i,
+                getBlueNormalized(color) * m_overallGain,
+                getRedNormalized(color) * m_overallGain
+            );
+        }
+        synth.process(
+            inChannels, outChannels, inBuffer, outBuffer, blockSize
+        );
+        for (int i = 0; i < blockSize; i++) {
+            audio[(sampleOffset + i) * 2] = inBuffer[0][i];
+            audio[(sampleOffset + i) * 2 + 1] = inBuffer[1][i];
+        }
+        sampleOffset += blockSize;
+    }
+
+    SF_INFO sf_info;
+    sf_info.samplerate = sampleRate;
+    sf_info.channels = 1;
+    sf_info.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+    sf_info.sections = 0;
+    sf_info.seekable = 0;
+    auto soundFile = sf_open("/home/nathan/out.wav", SFM_WRITE, &sf_info);
+
+    sf_write_float(soundFile, audio, numFrames * 2);
+    sf_close(soundFile);
+
+    delete[] audio;
+    delete[] leftInBuffer;
+    delete[] rightInBuffer;
+    delete[] leftOutBuffer;
+    delete[] rightOutBuffer;
 }
 
 void App::clear()

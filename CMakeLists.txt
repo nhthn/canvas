@@ -32,4 +32,5 @@ target_link_libraries(
     SDL2_image
     SDL2_ttf
     portaudio_static
+    sndfile
 )

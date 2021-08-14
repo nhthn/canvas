@@ -3,6 +3,7 @@
 #include <random>
 
 #include <SDL2/SDL.h>
+#include <sndfile.h>
 
 #include <sdlgui/screen.h>
 #include <sdlgui/window.h>
@@ -54,7 +55,6 @@ public:
         HorizontalLine
     };
 
-
     void setMode(Mode mode) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 
@@ -63,6 +63,8 @@ public:
     void setBlue(float blue) { m_blue = blue; }
     void setOpacity(float opacity) { m_opacity = opacity; }
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
+
+    void renderAudio(std::string fileName);
 
     void startPlayback();
     void stopPlayback();
