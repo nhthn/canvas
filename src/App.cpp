@@ -330,7 +330,17 @@ App::App()
         )
     )
     , m_synth(m_ringBuffer)
-    , m_audioBackend(&m_synth)
+    , m_audioBackend(
+        [this](
+            int inChannels,
+            int outChannels,
+            const float** input_buffer,
+            float** output_buffer,
+            int numFrames
+        ) {
+            m_synth.process(inChannels, outChannels, input_buffer, output_buffer, numFrames);
+        }
+    )
 {
     initSDL();
     initWindow();

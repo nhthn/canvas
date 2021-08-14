@@ -1,7 +1,7 @@
 #include "PortAudioBackend.hpp"
 
-PortAudioBackend::PortAudioBackend(Synth* synth)
-: m_synth(synth)
+PortAudioBackend::PortAudioBackend(AudioCallback callback)
+    : m_callback(callback)
 {
 }
 
@@ -56,7 +56,7 @@ const float** input_buffer,
     float** output_buffer,
     int frame_count
 ) {
-    m_synth->process(2, 2, input_buffer, output_buffer, frame_count);
+    m_callback(2, 2, input_buffer, output_buffer, frame_count);
 }
 
 void PortAudioBackend::handle_error(PaError error) {
