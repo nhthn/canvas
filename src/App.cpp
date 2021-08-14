@@ -328,7 +328,6 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     nwindow.setHeight(height);
 
     m_windowWidth = nwindow.width();
-    std::cout << m_windowWidth << std::endl;
 }
 
 App::App()
