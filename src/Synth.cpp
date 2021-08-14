@@ -39,7 +39,7 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
 Synth::Synth(std::shared_ptr<RingBuffer<float>> ringBuffer)
     : m_ringBuffer(ringBuffer)
 {
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < 239; i++) {
         float frequency = 55 * std::pow(2, i / 24.0);
         m_oscillators.push_back(
             std::make_unique<Oscillator>(frequency)

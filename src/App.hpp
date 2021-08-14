@@ -36,7 +36,7 @@ constexpr int k_windowWidth = 2 * 640;
 constexpr int k_windowHeight = 2 * 480;
 
 constexpr int k_imageWidth = 640;
-constexpr int k_imageHeight = 256;
+constexpr int k_imageHeight = 239;
 
 class GUI;
 
