@@ -32,6 +32,12 @@ class Synth {
 public:
     Synth(float sampleRate, std::shared_ptr<RingBuffer<float>>(ringBuffer));
 
+    int getNumOscillators() { return m_oscillators.size(); };
+
+    void setPDMode(int pdMode);
+    void setPDDistort(float pdDistort);
+    void setOscillatorAmplitude(int index, float amplitudeLeft, float amplitudeRight);
+
     void updateFromRingBuffer();
 
     void process(

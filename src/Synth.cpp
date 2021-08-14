@@ -72,6 +72,26 @@ Synth::Synth(float sampleRate, std::shared_ptr<RingBuffer<float>> ringBuffer)
     }
 }
 
+void Synth::setPDMode(int pdMode)
+{
+    for (int i = 0; i < m_oscillators.size(); i++) {
+        m_oscillators[i]->setPDMode(pdMode);
+    }
+}
+
+void Synth::setPDDistort(float pdDistort)
+{
+    for (int i = 0; i < m_oscillators.size(); i++) {
+        m_oscillators[i]->setPDDistort(pdDistort);
+    }
+}
+
+void Synth::setOscillatorAmplitude(int index, float amplitudeLeft, float amplitudeRight)
+{
+    m_oscillators[index]->setTargetAmplitudeLeft(amplitudeLeft);
+    m_oscillators[index]->setTargetAmplitudeRight(amplitudeRight);
+}
+
 void Synth::updateFromRingBuffer()
 {
     int count = m_ringBuffer->read();
@@ -79,17 +99,16 @@ void Synth::updateFromRingBuffer()
         return;
     }
     auto buffer = m_ringBuffer->getOutputBuffer();
-    for (int i = 0; i < m_oscillators.size(); i++) {
-        m_oscillators[i]->setPDMode(buffer[0]);
-        m_oscillators[i]->setPDDistort(buffer[1]);
-    }
+    setPDMode(buffer[0]);
+    setPDDistort(buffer[1]);
     int amplitudeOffset = 2;
     int numOscillators = std::min(
         (count - amplitudeOffset) / 2, static_cast<int>(m_oscillators.size())
     );
     for (int i = 0; i < numOscillators; i++) {
-        m_oscillators[i]->setTargetAmplitudeLeft(buffer[amplitudeOffset + 2 * i]);
-        m_oscillators[i]->setTargetAmplitudeRight(buffer[amplitudeOffset + 2 * i + 1]);
+        setOscillatorAmplitude(
+            i, buffer[amplitudeOffset + 2 * i], buffer[amplitudeOffset + 2 * i + 1]
+        );
     }
 }
 
