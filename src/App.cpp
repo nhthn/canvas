@@ -429,9 +429,9 @@ void App::renderAudio()
     while (sampleOffset <= numFrames) {
         int position = static_cast<float>(sampleOffset) * k_imageWidth / numFrames;
         for (int i = 0; i < k_imageHeight; i++) {
-            int color = m_pixels[i * k_imageWidth + position];
+            int color = m_pixels[k_imageWidth * (k_imageHeight - 1 - i) + position];
             synth.setOscillatorAmplitude(
-                k_imageHeight - 1 - i,
+                i,
                 getBlueNormalized(color) * m_overallGain,
                 getRedNormalized(color) * m_overallGain
             );
@@ -447,17 +447,17 @@ void App::renderAudio()
     }
 
 #ifdef _WIN32
-    std::string homeDirectory = string(getenv("HOMEDRIVE")) + getenv("HOMEPATH");
+    std::string homeDirectory = string(std::getenv("HOMEDRIVE")) + std::getenv("HOMEPATH");
     std::string separator = "\\";
 #else
-    std::string homeDirectory = getenv("HOME");
+    std::string homeDirectory = std::getenv("HOME");
     std::string separator = "/";
 #endif // _WIN32
     std::string fileName = homeDirectory + separator + "out.wav";
 
     SF_INFO sf_info;
     sf_info.samplerate = sampleRate;
-    sf_info.channels = 1;
+    sf_info.channels = 2;
     sf_info.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
     sf_info.sections = 0;
     sf_info.seekable = 0;
