@@ -64,7 +64,7 @@ public:
     void setOpacity(float opacity) { m_opacity = opacity; }
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
-    void renderAudio(std::string fileName);
+    void renderAudio();
 
     void startPlayback();
     void stopPlayback();

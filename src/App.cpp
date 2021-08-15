@@ -192,7 +192,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     nwindow.label("File");
 
     nwindow.button("Render audio", [this] {
-        m_app->renderAudio("");
+        m_app->renderAudio();
     });
 
     ////////////////
@@ -401,7 +401,7 @@ void App::stopPlayback()
     m_playing = false;
 }
 
-void App::renderAudio(std::string fileName)
+void App::renderAudio()
 {
     float sampleRate = m_audioBackend.getSampleRate();
     int numFrames = (
@@ -431,7 +431,7 @@ void App::renderAudio(std::string fileName)
         for (int i = 0; i < k_imageHeight; i++) {
             int color = m_pixels[i * k_imageWidth + position];
             synth.setOscillatorAmplitude(
-                i,
+                k_imageHeight - 1 - i,
                 getBlueNormalized(color) * m_overallGain,
                 getRedNormalized(color) * m_overallGain
             );
@@ -446,13 +446,22 @@ void App::renderAudio(std::string fileName)
         sampleOffset += blockSize;
     }
 
+#ifdef _WIN32
+    std::string homeDirectory = string(getenv("HOMEDRIVE")) + getenv("HOMEPATH");
+    std::string separator = "\\";
+#else
+    std::string homeDirectory = getenv("HOME");
+    std::string separator = "/";
+#endif // _WIN32
+    std::string fileName = homeDirectory + separator + "out.wav";
+
     SF_INFO sf_info;
     sf_info.samplerate = sampleRate;
     sf_info.channels = 1;
     sf_info.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
     sf_info.sections = 0;
     sf_info.seekable = 0;
-    auto soundFile = sf_open("/home/nathan/out.wav", SFM_WRITE, &sf_info);
+    auto soundFile = sf_open(fileName.c_str(), SFM_WRITE, &sf_info);
 
     sf_write_float(soundFile, audio, numFrames * 2);
     sf_close(soundFile);
