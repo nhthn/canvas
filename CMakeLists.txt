@@ -23,6 +23,8 @@ file(GLOB nanogui_sdl_files
     third_party/nanogui-sdl/sdlgui/*.c
 )
 
+include_directories(third_party/stb)
+
 file(GLOB canvas_files src/*.cpp)
 add_executable(canvas ${canvas_files} ${nanogui_sdl_files})
 

@@ -30,6 +30,8 @@
 #include <sdlgui/switchbox.h>
 #include <sdlgui/formhelper.h>
 
+#include "stb_image.h"
+
 #include "common.hpp"
 #include "Synth.hpp"
 #include "PortAudioBackend.hpp"
@@ -67,6 +69,7 @@ public:
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
     void renderAudio();
+    void loadImage();
 
     void startPlayback();
     void stopPlayback();

@@ -195,6 +195,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         m_app->renderAudio();
     });
 
+    nwindow.button("Load image", [this] {
+        m_app->loadImage();
+    });
+
     ////////////////
 
     nwindow.label("Filters");
@@ -467,6 +471,34 @@ void App::renderAudio()
     delete[] rightInBuffer;
     delete[] leftOutBuffer;
     delete[] rightOutBuffer;
+}
+
+void App::loadImage()
+{
+    std::string fileName = getHomeDirectory() + getPathSeparator() + "in.png";
+    int width;
+    int height;
+    int unused;
+    int channels = 3;
+    unsigned char* imageData = stbi_load(
+        fileName.c_str(), &width, &height, &unused, channels
+    );
+    if (imageData == nullptr) {
+        return;
+    }
+
+    for (int y = 0; y < std::min(k_imageHeight, height); y++) {
+        for (int x = 0; x < std::min(k_imageWidth, width); x++) {
+            int offset = (y * width + x) * channels;
+            char red = imageData[offset];
+            char green = imageData[offset + 1];
+            char blue = imageData[offset + 2];
+            int color = (red << 16) + (green << 8) + blue;
+            m_pixels[y * k_imageWidth + x] = color;
+        }
+    }
+
+    stbi_image_free(imageData);
 }
 
 void App::clear()
