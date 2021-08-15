@@ -80,6 +80,8 @@ private:
     std::unique_ptr<sdlgui::DropdownBox> m_pdMode;
     std::unique_ptr<SliderTextBox> m_pdDistort;
 
+    std::unique_ptr<sdlgui::TextBox> m_renderAudioPath;
+
     std::unique_ptr<sdlgui::TextBox> m_loadImagePath;
 
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterRootDropDown;

@@ -145,8 +145,19 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     nwindow.label("File");
 
-    nwindow.button("Render audio", [this] {
-        m_app->renderAudio();
+    auto& renderAudioPopup = nwindow.popupbutton("Render audio")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
+
+    m_renderAudioPath = std::make_unique<sdlgui::TextBox>(
+        &renderAudioPopup,
+        getHomeDirectory() + getPathSeparator() + "out.wav"
+    );
+    m_renderAudioPath->withAlignment(sdlgui::TextBox::Alignment::Left);
+    m_renderAudioPath->setEditable(true);
+
+    renderAudioPopup.button("Render", [this] {
+        m_app->renderAudio(m_renderAudioPath->value());
     });
 
     auto& loadImagePopup = nwindow.popupbutton("Load image")

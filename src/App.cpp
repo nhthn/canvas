@@ -113,7 +113,7 @@ void App::stopPlayback()
     m_playing = false;
 }
 
-void App::renderAudio()
+void App::renderAudio(std::string fileName)
 {
     if (m_speedInPixelsPerSecond < 0.01) {
         return;
@@ -164,8 +164,6 @@ void App::renderAudio()
         }
         sampleOffset += blockSize;
     }
-
-    std::string fileName = getHomeDirectory() + getPathSeparator() + "out.wav";
 
     SF_INFO sf_info;
     sf_info.samplerate = sampleRate;
