@@ -145,7 +145,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     nwindow.label("File");
 
-    auto& renderAudioPopup = nwindow.popupbutton("Render audio")
+    auto& renderAudioPopup = nwindow.popupbutton("Render Audio")
         .popup()
         .withLayout<sdlgui::GroupLayout>();
 
@@ -160,7 +160,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         m_app->renderAudio(m_renderAudioPath->value());
     });
 
-    auto& loadImagePopup = nwindow.popupbutton("Load image")
+    auto& loadImagePopup = nwindow.popupbutton("Load Image")
         .popup()
         .withLayout<sdlgui::GroupLayout>();
 
