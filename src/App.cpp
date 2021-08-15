@@ -449,14 +449,7 @@ void App::renderAudio()
         sampleOffset += blockSize;
     }
 
-#ifdef _WIN32
-    std::string homeDirectory = string(std::getenv("HOMEDRIVE")) + std::getenv("HOMEPATH");
-    std::string separator = "\\";
-#else
-    std::string homeDirectory = std::getenv("HOME");
-    std::string separator = "/";
-#endif // _WIN32
-    std::string fileName = homeDirectory + separator + "out.wav";
+    std::string fileName = getHomeDirectory() + getPathSeparator() + "out.wav";
 
     SF_INFO sf_info;
     sf_info.samplerate = sampleRate;

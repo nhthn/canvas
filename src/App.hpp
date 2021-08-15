@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <memory>
 #include <random>
@@ -29,6 +30,7 @@
 #include <sdlgui/switchbox.h>
 #include <sdlgui/formhelper.h>
 
+#include "common.hpp"
 #include "Synth.hpp"
 #include "PortAudioBackend.hpp"
 #include "RingBuffer.hpp"
