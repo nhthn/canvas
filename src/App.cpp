@@ -185,9 +185,8 @@ void App::renderAudio()
     delete[] rightOutBuffer;
 }
 
-void App::loadImage()
+void App::loadImage(std::string fileName)
 {
-    std::string fileName = getHomeDirectory() + getPathSeparator() + "in.png";
     int width;
     int height;
     int unused;

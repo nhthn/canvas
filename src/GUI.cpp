@@ -149,8 +149,19 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         m_app->renderAudio();
     });
 
-    nwindow.button("Load image", [this] {
-        m_app->loadImage();
+    auto& loadImagePopup = nwindow.popupbutton("Load image")
+        .popup()
+        .withLayout<sdlgui::GroupLayout>();
+
+    m_loadImagePath = std::make_unique<sdlgui::TextBox>(
+        &loadImagePopup,
+        getHomeDirectory() + getPathSeparator() + "in.png"
+    );
+    m_loadImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
+    m_loadImagePath->setEditable(true);
+
+    loadImagePopup.button("Load", [this] {
+        m_app->loadImage(m_loadImagePath->value());
     });
 
     ////////////////

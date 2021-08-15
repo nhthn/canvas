@@ -46,7 +46,7 @@ public:
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
     void renderAudio();
-    void loadImage();
+    void loadImage(std::string fileName);
 
     void startPlayback();
     void stopPlayback();
