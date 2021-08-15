@@ -440,6 +440,9 @@ void App::renderAudio()
             inChannels, outChannels, inBuffer, outBuffer, blockSize
         );
         for (int i = 0; i < blockSize; i++) {
+            if (sampleOffset + i >= numFrames) {
+                break;
+            }
             audio[(sampleOffset + i) * 2] = inBuffer[0][i];
             audio[(sampleOffset + i) * 2 + 1] = inBuffer[1][i];
         }
