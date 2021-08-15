@@ -15,3 +15,49 @@ std::string getPathSeparator() {
     return "/";
 #endif // _WIN32
 };
+
+int nextPowerOfTwo(int x) {
+    int power = 1;
+    while (power < x) {
+	power *= 2;
+    }
+    return power;
+}
+
+int getRed(int color) {
+    return (color & 0xff0000) >> 16;
+}
+
+float getRedNormalized(int color) {
+    return getRed(color) / 255.f;
+}
+
+int getGreen(int color) {
+    return (color & 0x00ff00) >> 8;
+}
+
+float getGreenNormalized(int color) {
+    return getGreen(color) / 255.f;
+}
+
+int getBlue(int color) {
+    return ((color & 0x0000ff) >> 0);
+}
+
+float getBlueNormalized(int color) {
+    return getBlue(color) / 255.f;
+}
+
+float clamp01(float x) {
+    return std::max(std::min(x, 1.0f), 0.0f);
+}
+
+uint32_t colorFromNormalized(float red, float green, float blue)
+{
+    return (
+        0xff000000
+        + (static_cast<int>(clamp01(red) * 255) << 16)
+        + (static_cast<int>(clamp01(green) * 255) << 8)
+        + (static_cast<int>(clamp01(blue) * 255) << 0)
+    );
+}
