@@ -407,6 +407,10 @@ void App::stopPlayback()
 
 void App::renderAudio()
 {
+    if (m_speedInPixelsPerSecond < 0.01) {
+        return;
+    }
+
     float sampleRate = m_audioBackend.getSampleRate();
     int numFrames = (
         static_cast<float>(k_imageWidth) / m_speedInPixelsPerSecond * sampleRate
