@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdlib>
 #include <string>
+#include <tuple>
 
 using Image = std::tuple<uint32_t*, int, int>;
 

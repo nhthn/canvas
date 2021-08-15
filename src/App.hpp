@@ -9,6 +9,7 @@
 #include "stb_image.h"
 
 #include "common.hpp"
+#include "draw.hpp"
 #include "filters.hpp"
 #include "GUI.hpp"
 #include "Synth.hpp"
