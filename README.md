@@ -8,13 +8,15 @@ This software is built on PortAudio, libsndfile, SDL2, [stb_image](https://githu
 
 ## Building
 
-For installation on Arch:
+Debian/Ubuntu (untested):
 
-    sudo pacman -S cmake sdl2 sdl2_image sdl2_ttf
+    sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev portaudio19-dev
 
-For other platforms: no clue
+Arch:
 
-To build on Linux:
+    sudo pacman -S cmake sdl2 sdl2_image sdl2_ttf portaudio
+
+Build on Linux:
 
     mkdir build
     cd build
