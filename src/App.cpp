@@ -150,14 +150,16 @@ void App::loadImage(std::string fileName)
         return;
     }
 
-    for (int y = 0; y < std::min(k_imageHeight, height); y++) {
-        for (int x = 0; x < std::min(k_imageWidth, width); x++) {
+    for (int i = 0; i < k_imageHeight; i++) {
+        for (int j = 0; j < k_imageWidth; j++) {
+            int x = static_cast<float>(j) * width / k_imageWidth;
+            int y = static_cast<float>(i) * height / k_imageHeight;
             int offset = (y * width + x) * channels;
             char red = imageData[offset];
             char green = imageData[offset + 1];
             char blue = imageData[offset + 2];
-            int color = (red << 16) + (green << 8) + blue;
-            m_pixels[y * k_imageWidth + x] = color;
+            int color = 0xff000000 + (red << 16) + (green << 8) + blue;
+            m_pixels[i * k_imageWidth + j] = color;
         }
     }
 
