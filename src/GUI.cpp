@@ -146,9 +146,8 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     nwindow.label("File");
 
-    auto& renderAudioPopup = nwindow.popupbutton("Render Audio")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& renderAudioButton = nwindow.popupbutton("Render Audio");
+    auto& renderAudioPopup = renderAudioButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_renderAudioPath = std::make_unique<sdlgui::TextBox>(
         &renderAudioPopup,
@@ -157,13 +156,13 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_renderAudioPath->withAlignment(sdlgui::TextBox::Alignment::Left);
     m_renderAudioPath->setEditable(true);
 
-    renderAudioPopup.button("Render", [this] {
+    renderAudioPopup.button("Render", [this, &renderAudioButton] {
         m_app->renderAudio(m_renderAudioPath->value());
+        renderAudioButton.setPushed(false);
     });
 
-    auto& loadImagePopup = nwindow.popupbutton("Load Image")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& loadImageButton = nwindow.popupbutton("Load Image");
+    auto& loadImagePopup = loadImageButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_loadImagePath = std::make_unique<sdlgui::TextBox>(
         &loadImagePopup,
@@ -172,8 +171,9 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_loadImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
     m_loadImagePath->setEditable(true);
 
-    loadImagePopup.button("Load", [this] {
+    loadImagePopup.button("Load", [this, &loadImageButton] {
         m_app->loadImage(m_loadImagePath->value());
+        loadImageButton.setPushed(false);
     });
 
     ////////////////
