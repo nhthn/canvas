@@ -50,6 +50,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 {
     auto& nwindow = window("Toolbox", sdlgui::Vector2i{0, 0});
     nwindow.setDraggable(false);
+    nwindow.setDropShadowEnabled(false);
 
     nwindow.withLayout<sdlgui::GroupLayout>();
 
