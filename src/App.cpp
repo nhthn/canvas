@@ -67,13 +67,33 @@ void App::stopPlayback()
     m_playing = false;
 }
 
-void App::renderAudio(std::string fileName)
+void App::displayError(std::string message)
+{
+    m_gui->displayError(message);
+}
+
+bool App::renderAudio(std::string fileName)
 {
     if (m_speedInPixelsPerSecond < 0.01) {
-        return;
+        displayError("Speed is too slow to render audio.");
+        return false;
     }
 
     float sampleRate = m_audioBackend.getSampleRate();
+
+    SF_INFO sf_info;
+    sf_info.samplerate = sampleRate;
+    sf_info.channels = 2;
+    sf_info.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+    sf_info.sections = 0;
+    sf_info.seekable = 0;
+    auto soundFile = sf_open(fileName.c_str(), SFM_WRITE, &sf_info);
+
+    if (soundFile == nullptr) {
+        displayError(sf_strerror(soundFile));
+        return false;
+    }
+
     int numFrames = (
         static_cast<float>(k_imageWidth) / m_speedInPixelsPerSecond * sampleRate
     );
@@ -119,14 +139,6 @@ void App::renderAudio(std::string fileName)
         sampleOffset += blockSize;
     }
 
-    SF_INFO sf_info;
-    sf_info.samplerate = sampleRate;
-    sf_info.channels = 2;
-    sf_info.format = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
-    sf_info.sections = 0;
-    sf_info.seekable = 0;
-    auto soundFile = sf_open(fileName.c_str(), SFM_WRITE, &sf_info);
-
     sf_write_float(soundFile, audio, numFrames * 2);
     sf_close(soundFile);
 
@@ -135,6 +147,8 @@ void App::renderAudio(std::string fileName)
     delete[] rightInBuffer;
     delete[] leftOutBuffer;
     delete[] rightOutBuffer;
+
+    return true;
 }
 
 void App::loadImage(std::string fileName)

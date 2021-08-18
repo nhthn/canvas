@@ -41,13 +41,15 @@ public:
     void setMode(Mode mode) { m_mode = mode; }
     Mode getMode() { return m_mode; }
 
+    void displayError(std::string message);
+
     void setRed(float red) { m_red = red; }
     void setGreen(float green) { m_green = green; }
     void setBlue(float blue) { m_blue = blue; }
     void setOpacity(float opacity) { m_opacity = opacity; }
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
-    void renderAudio(std::string fileName);
+    bool renderAudio(std::string fileName);
     void loadImage(std::string fileName);
 
     void startPlayback();

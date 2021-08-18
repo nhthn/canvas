@@ -157,8 +157,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_renderAudioPath->setEditable(true);
 
     renderAudioPopup.button("Render", [this, &renderAudioButton] {
-        m_app->renderAudio(m_renderAudioPath->value());
-        renderAudioButton.setPushed(false);
+        bool success = m_app->renderAudio(m_renderAudioPath->value());
+        if (success) {
+            renderAudioButton.setPushed(false);
+        }
     });
 
     auto& loadImageButton = nwindow.popupbutton("Load Image");
@@ -312,4 +314,9 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     nwindow.setHeight(height);
 
     m_windowWidth = nwindow.width();
+}
+
+void GUI::displayError(std::string message)
+{
+    msgdialog(sdlgui::MessageDialog::Type::Warning, "Error", message);
 }

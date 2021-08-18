@@ -65,6 +65,8 @@ public:
 
     int getWindowWidth() { return m_windowWidth; }
 
+    void displayError(std::string message);
+
 private:
     App* m_app;
     int m_windowWidth;
