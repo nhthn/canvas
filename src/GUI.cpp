@@ -186,9 +186,8 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     ////////////////
 
-    auto& scaleFilterPopup = nwindow.popupbutton("Scale Filter")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& scaleFilterButton = nwindow.popupbutton("Scale Filter");
+    auto& scaleFilterPopup = scaleFilterButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_scaleFilterRootDropDown = std::make_unique<sdlgui::DropdownBox>(
         &scaleFilterPopup,
@@ -212,58 +211,55 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     );
     m_scaleFilterScaleClassDropDown->withFixedWidth(240);
 
-    scaleFilterPopup.button("Apply", [this] {
+    scaleFilterPopup.button("Apply", [this, &scaleFilterButton] {
         m_app->applyScaleFilter(
             m_scaleFilterRootDropDown->selectedIndex(),
             m_scaleFilterScaleClassDropDown->selectedIndex()
         );
+        scaleFilterButton.setPushed(false);
     });
 
     ////////////////
 
-    auto& reverbPopup = nwindow.popupbutton("Reverb")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& reverbButton = nwindow.popupbutton("Reverb");
+    auto& reverbPopup = reverbButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_reverbDecay = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Decay");
     m_reverbDamping = std::make_unique<SliderTextBox>(reverbPopup, 0.5f, "Damping");
     m_reverbReverse = std::make_unique<sdlgui::CheckBox>(&reverbPopup, "Reverse");
 
-    reverbPopup.button("Apply", [this] {
+    reverbPopup.button("Apply", [this, &reverbButton] {
         m_app->applyReverb(
             m_reverbDecay->value(),
             m_reverbDamping->value(),
             m_reverbReverse->checked()
         );
+        reverbButton.setPushed(false);
     });
 
     ////////////////
 
-    auto& chorusPopup = nwindow.popupbutton("Chorus")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& chorusButton = nwindow.popupbutton("Chorus");
+    auto& chorusPopup = chorusButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_chorusRate = std::make_unique<SliderTextBox>(chorusPopup, 0.5, "Rate");
-
     m_chorusDepth = std::make_unique<SliderTextBox>(chorusPopup, 0.8, "Depth");
 
-    chorusPopup.button("Apply", [this] {
+    chorusPopup.button("Apply", [this, &chorusButton] {
         m_app->applyChorus(
             m_chorusRate->value(),
             m_chorusDepth->value()
         );
+        chorusButton.setPushed(false);
     });
 
     ////////////////
 
-    auto& tremoloPopup = nwindow.popupbutton("Tremolo")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& tremoloButton = nwindow.popupbutton("Tremolo");
+    auto& tremoloPopup = tremoloButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_tremoloRate = std::make_unique<SliderTextBox>(tremoloPopup, 0.5, "Rate");
-
     m_tremoloDepth = std::make_unique<SliderTextBox>(tremoloPopup, 1.0, "Depth");
-
     m_tremoloStereo = std::make_unique<SliderTextBox>(tremoloPopup, 0.0, "Stereo");
 
     m_tremoloShape = std::make_unique<sdlgui::DropdownBox>(
@@ -277,20 +273,20 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         }
     );
 
-    tremoloPopup.button("Apply", [this] {
+    tremoloPopup.button("Apply", [this, &tremoloButton] {
         m_app->applyTremolo(
             m_tremoloRate->value(),
             m_tremoloDepth->value(),
             m_tremoloShape->selectedIndex(),
             m_tremoloStereo->value()
         );
+        tremoloButton.setPushed(false);
     });
 
     ////////////////
 
-    auto& harmonicsPopup = nwindow.popupbutton("Harmonics")
-        .popup()
-        .withLayout<sdlgui::GroupLayout>();
+    auto& harmonicsButton = nwindow.popupbutton("Harmonics");
+    auto& harmonicsPopup = harmonicsButton.popup().withLayout<sdlgui::GroupLayout>();
 
     m_harmonics2 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/2, "2");
     m_harmonics3 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/3, "3");
@@ -298,7 +294,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_harmonics5 = std::make_unique<SliderTextBox>(harmonicsPopup, 1.0/5, "5");
     m_subharmonics = std::make_unique<sdlgui::CheckBox>(&harmonicsPopup, "Subharmonics");
 
-    harmonicsPopup.button("Apply", [this] {
+    harmonicsPopup.button("Apply", [this, &harmonicsButton] {
         m_app->applyHarmonics(
             m_harmonics2->value(),
             m_harmonics3->value(),
@@ -306,7 +302,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
             m_harmonics5->value(),
             m_subharmonics->checked()
         );
+        harmonicsButton.setPushed(false);
     });
+
+    ////////////////
 
     performLayout(mSDL_Renderer);
 
