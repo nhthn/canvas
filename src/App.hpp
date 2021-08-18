@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <sndfile.h>
 
+#define STBI_FAILURE_USERMSG
 #include "stb_image.h"
 
 #include "common.hpp"
@@ -50,7 +51,7 @@ public:
     void setBrushSize(float brushSize) { m_brushSize = brushSize; }
 
     bool renderAudio(std::string fileName);
-    void loadImage(std::string fileName);
+    bool loadImage(std::string fileName);
 
     void startPlayback();
     void stopPlayback();

@@ -174,8 +174,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_loadImagePath->setEditable(true);
 
     loadImagePopup.button("Load", [this, &loadImageButton] {
-        m_app->loadImage(m_loadImagePath->value());
-        loadImageButton.setPushed(false);
+        bool success = m_app->loadImage(m_loadImagePath->value());
+        if (success) {
+            loadImageButton.setPushed(false);
+        }
     });
 
     ////////////////

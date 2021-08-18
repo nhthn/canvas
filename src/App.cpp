@@ -90,7 +90,7 @@ bool App::renderAudio(std::string fileName)
     auto soundFile = sf_open(fileName.c_str(), SFM_WRITE, &sf_info);
 
     if (soundFile == nullptr) {
-        displayError(sf_strerror(soundFile));
+        displayError(std::string("Audio rendering failed: ") + sf_strerror(soundFile));
         return false;
     }
 
@@ -151,7 +151,7 @@ bool App::renderAudio(std::string fileName)
     return true;
 }
 
-void App::loadImage(std::string fileName)
+bool App::loadImage(std::string fileName)
 {
     int width;
     int height;
@@ -161,7 +161,8 @@ void App::loadImage(std::string fileName)
         fileName.c_str(), &width, &height, &unused, channels
     );
     if (imageData == nullptr) {
-        return;
+        displayError(std::string("Image loading failed: ") + stbi_failure_reason());
+        return false;
     }
 
     for (int i = 0; i < k_imageHeight; i++) {
@@ -178,6 +179,8 @@ void App::loadImage(std::string fileName)
     }
 
     stbi_image_free(imageData);
+
+    return true;
 }
 
 void App::clear()
