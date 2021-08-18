@@ -188,6 +188,10 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         m_app->clear();
     });
 
+    nwindow.button("Invert", [this] {
+        m_app->applyInvert();
+    });
+
     ////////////////
 
     auto& scaleFilterButton = nwindow.popupbutton("Scale Filter");

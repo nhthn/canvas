@@ -13,6 +13,17 @@ void clear(Image image)
     }
 }
 
+void applyInvert(Image image)
+{
+    auto pixels = std::get<0>(image);
+    auto width = std::get<1>(image);
+    auto height = std::get<2>(image);
+
+    for (int i = 0; i < height * width; i++) {
+        pixels[i] ^= 0x00ffffff;
+    }
+}
+
 void applyReverb(Image image, float decay, float damping, bool reverse)
 {
     auto pixels = std::get<0>(image);

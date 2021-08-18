@@ -63,6 +63,7 @@ public:
     void setPDDistort(float pdDistort) { m_pdDistort = pdDistort; };
 
     void clear();
+    void applyInvert();
     void applyScaleFilter(int root, int scaleClass);
     void applyReverb(float decay, float damping, bool reverse);
     void applyChorus(float rate, float depth);

@@ -189,6 +189,12 @@ void App::clear()
     filters::clear(image);
 }
 
+void App::applyInvert()
+{
+    Image image(m_pixels, k_imageWidth, k_imageHeight);
+    filters::applyInvert(image);
+}
+
 void App::applyReverb(float decay, float damping, bool reverse)
 {
     Image image(m_pixels, k_imageWidth, k_imageHeight);
