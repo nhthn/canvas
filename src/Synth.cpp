@@ -95,7 +95,7 @@ Synth::Synth(float sampleRate)
     : m_sampleRate(sampleRate)
 {
     for (int i = 0; i < 239; i++) {
-        float frequency = 55 * std::pow(2, i / 24.0);
+        float frequency = 55.0 / 2 * std::pow(2, i / 24.0);
         m_oscillators.push_back(
             std::make_unique<Oscillator>(m_sampleRate, frequency)
         );
