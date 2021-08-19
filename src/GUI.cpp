@@ -130,7 +130,7 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
 
     m_pdMode = std::make_unique<sdlgui::DropdownBox>(
         &nwindow,
-        std::vector<std::string> { "Pulsar PD", "Saw PD" }
+        std::vector<std::string> { "Pulsar PD", "Saw PD", "Square PD", "Sine PWM" }
     );
     m_pdMode->setCallback([this](int pdMode) {
         m_app->setPDMode(pdMode);

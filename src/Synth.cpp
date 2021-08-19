@@ -10,7 +10,7 @@ float distortPhase(float phase, int mode, float distort)
 {
     switch (mode) {
     case 0: // Pulsar
-        return std::min(phase * (1 + 10 * distort), 1.f);
+        return std::min(phase * (1 + 6 * distort * distort), 1.f);
     case 1: // Saw
         {
             float breakpoint = 0.25 * (1 - distort * 0.9);
@@ -22,6 +22,37 @@ float distortPhase(float phase, int mode, float distort)
                 return 1 - (1 - phase) * outerSlope;
             } else {
                 return 0.5 + (phase - 0.5) * innerSlope;
+            }
+        }
+    case 2: // Square
+        {
+            float cosinePhase = std::fmod(phase + 0.25f, 1.0f);
+
+            float adjustedDistort = distort * 0.9;
+            float breakpoint = adjustedDistort * 0.5;
+            float slope = 1 / (1 - adjustedDistort);
+
+            if (cosinePhase < breakpoint) {
+                cosinePhase = 0;
+            } else if (cosinePhase < 0.5f) {
+                cosinePhase = (cosinePhase - breakpoint) * slope;
+            } else if (cosinePhase < 0.5f + breakpoint) {
+                cosinePhase = 0.5;
+            } else {
+                cosinePhase = 0.5 + (cosinePhase - (0.5 + breakpoint)) * slope;
+            }
+
+            return std::fmod(cosinePhase - 0.25f + 1.0f, 1.0f);
+        }
+    case 3: // PWM
+        {
+            float adjustedDistort = distort * 0.9;
+            float breakpoint = 0.5 + 0.5 * adjustedDistort;
+
+            if (phase < breakpoint) {
+                return phase * 0.5 / breakpoint;
+            } else {
+                return 0.5 + (phase - breakpoint) * 0.5 / (1 - breakpoint);
             }
         }
     }
