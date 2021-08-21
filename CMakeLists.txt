@@ -14,6 +14,7 @@ if(APPLE)
     link_directories(/usr/local/lib)
 endif()
 
+set(NANOGUI_BUILD_EXAMPLE OFF)
 add_subdirectory(third_party/nanogui-sdl)
 include_directories(
     third_party/nanogui-sdl
