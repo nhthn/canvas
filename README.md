@@ -14,7 +14,7 @@ Debian/Ubuntu:
 
 Arch:
 
-    sudo pacman -S cmake sdl2 sdl2_image sdl2_ttf portaudio
+    sudo pacman -S cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile
 
 Build on Linux:
 
