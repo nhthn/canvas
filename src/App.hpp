@@ -52,6 +52,7 @@ public:
 
     bool renderAudio(std::string fileName);
     bool loadImage(std::string fileName);
+    bool saveImage(std::string fileName);
 
     void startPlayback();
     void stopPlayback();

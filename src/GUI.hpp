@@ -86,6 +86,8 @@ private:
 
     std::unique_ptr<sdlgui::TextBox> m_loadImagePath;
 
+    std::unique_ptr<sdlgui::TextBox> m_saveImagePath;
+
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterRootDropDown;
     std::unique_ptr<sdlgui::DropdownBox> m_scaleFilterScaleClassDropDown;
 

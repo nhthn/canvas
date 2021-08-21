@@ -1,5 +1,9 @@
 #include "App.hpp"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+
 App::App()
     : m_ringBuffer(
         std::make_shared<RingBuffer<float>>(
@@ -179,6 +183,36 @@ bool App::loadImage(std::string fileName)
     }
 
     stbi_image_free(imageData);
+
+    return true;
+}
+
+bool App::saveImage(std::string fileName)
+{
+    int channels = 3;
+    char* stbPixels = new char[k_imageHeight * k_imageWidth * channels];
+
+    for (int i = 0; i < k_imageHeight; i++) {
+        for (int j = 0; j < k_imageWidth; j++) {
+            int color = m_pixels[i * k_imageWidth + j];
+            int offset = (i * k_imageWidth + j) * channels;
+            stbPixels[offset + 0] = getRed(color);
+            stbPixels[offset + 1] = getGreen(color);
+            stbPixels[offset + 2] = getBlue(color);
+        }
+    }
+
+    int strideInBytes = k_imageWidth * channels;
+
+    int success = stbi_write_png(
+        fileName.c_str(), k_imageWidth, k_imageHeight, channels, stbPixels, strideInBytes
+    );
+
+    if (success == 0) {
+        displayError("Image saving failed");
+    }
+
+    delete[] stbPixels;
 
     return true;
 }

@@ -180,6 +180,23 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         }
     });
 
+    auto& saveImageButton = nwindow.popupbutton("Save Image");
+    auto& saveImagePopup = saveImageButton.popup().withLayout<sdlgui::GroupLayout>();
+
+    m_saveImagePath = std::make_unique<sdlgui::TextBox>(
+        &saveImagePopup,
+        getHomeDirectory() + getPathSeparator() + "out.png"
+    );
+    m_loadImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
+    m_loadImagePath->setEditable(true);
+
+    saveImagePopup.button("Save", [this, &saveImageButton] {
+        bool success = m_app->saveImage(m_saveImagePath->value());
+        if (success) {
+            saveImageButton.setPushed(false);
+        }
+    });
+
     ////////////////
 
     nwindow.label("Filters");
