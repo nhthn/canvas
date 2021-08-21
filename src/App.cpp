@@ -174,9 +174,9 @@ bool App::loadImage(std::string fileName)
             int x = static_cast<float>(j) * width / k_imageWidth;
             int y = static_cast<float>(i) * height / k_imageHeight;
             int offset = (y * width + x) * channels;
-            char red = imageData[offset];
-            char green = imageData[offset + 1];
-            char blue = imageData[offset + 2];
+            unsigned char red = imageData[offset];
+            unsigned char green = imageData[offset + 1];
+            unsigned char blue = imageData[offset + 2];
             int color = 0xff000000 + (red << 16) + (green << 8) + blue;
             m_pixels[i * k_imageWidth + j] = color;
         }
@@ -189,30 +189,31 @@ bool App::loadImage(std::string fileName)
 
 bool App::saveImage(std::string fileName)
 {
-    int channels = 3;
-    char* stbPixels = new char[k_imageHeight * k_imageWidth * channels];
+    int channels = 4;
+    char* imageData = new char[k_imageHeight * k_imageWidth * channels];
 
     for (int i = 0; i < k_imageHeight; i++) {
         for (int j = 0; j < k_imageWidth; j++) {
             int color = m_pixels[i * k_imageWidth + j];
             int offset = (i * k_imageWidth + j) * channels;
-            stbPixels[offset + 0] = getRed(color);
-            stbPixels[offset + 1] = getGreen(color);
-            stbPixels[offset + 2] = getBlue(color);
+            imageData[offset + 0] = getRed(color);
+            imageData[offset + 1] = getGreen(color);
+            imageData[offset + 2] = getBlue(color);
+            imageData[offset + 3] = 255;
         }
     }
 
     int strideInBytes = k_imageWidth * channels;
 
     int success = stbi_write_png(
-        fileName.c_str(), k_imageWidth, k_imageHeight, channels, stbPixels, strideInBytes
+        fileName.c_str(), k_imageWidth, k_imageHeight, channels, imageData, strideInBytes
     );
 
     if (success == 0) {
         displayError("Image saving failed");
     }
 
-    delete[] stbPixels;
+    delete[] imageData;
 
     return true;
 }

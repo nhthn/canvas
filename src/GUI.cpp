@@ -187,8 +187,8 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
         &saveImagePopup,
         getHomeDirectory() + getPathSeparator() + "out.png"
     );
-    m_loadImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
-    m_loadImagePath->setEditable(true);
+    m_saveImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
+    m_saveImagePath->setEditable(true);
 
     saveImagePopup.button("Save", [this, &saveImageButton] {
         bool success = m_app->saveImage(m_saveImagePath->value());
