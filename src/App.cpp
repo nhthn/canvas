@@ -31,7 +31,7 @@ App::App()
 
 App::~App()
 {
-    delete m_pixels;
+    delete[] m_pixels;
 }
 
 void App::initAudio()
