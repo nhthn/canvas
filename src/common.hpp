@@ -18,3 +18,5 @@ int getBlue(int color);
 float getBlueNormalized(int color);
 float clamp01(float x);
 uint32_t colorFromNormalized(float red, float green, float blue);
+
+bool endsWith(std::string const &fullString, std::string const &ending);

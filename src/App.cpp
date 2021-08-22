@@ -83,6 +83,11 @@ bool App::renderAudio(std::string fileName)
         return false;
     }
 
+    if (!endsWith(fileName, ".wav")) {
+        displayError("File name must end in .wav");
+        return false;
+    }
+
     float sampleRate = m_audioBackend.getSampleRate();
 
     SF_INFO sf_info;
@@ -190,6 +195,12 @@ bool App::loadImage(std::string fileName)
 bool App::saveImage(std::string fileName)
 {
     int channels = 4;
+
+    if (!endsWith(fileName, ".png")) {
+        displayError("File name must end in .png");
+        return false;
+    }
+
     char* imageData = new char[k_imageHeight * k_imageWidth * channels];
 
     for (int i = 0; i < k_imageHeight; i++) {

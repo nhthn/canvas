@@ -61,3 +61,14 @@ uint32_t colorFromNormalized(float red, float green, float blue)
         + (static_cast<int>(clamp01(blue) * 255) << 0)
     );
 }
+
+// https://stackoverflow.com/a/874160
+bool endsWith(std::string const &fullString, std::string const &ending) {
+    if (fullString.length() >= ending.length()) {
+        return fullString.compare(
+            fullString.length() - ending.length(), ending.length(), ending
+        ) == 0;
+    } else {
+        return false;
+    }
+}
