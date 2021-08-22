@@ -111,7 +111,7 @@ bool App::loadAudio(std::string fileName)
         fftBufferSize, fftInBuffer, fftOutBuffer, FFTW_MEASURE
     );
 
-    for (int channel = 0; channel < 2; channel++) {
+    for (int channel = 0; channel < sf_info.channels; channel++) {
         for (int x = 0; x < k_imageWidth; x++) {
             int offset = x * static_cast<float>(sf_info.frames) / k_imageWidth;
             for (int i = 0; i < fftBufferSize; i++) {
@@ -119,7 +119,11 @@ bool App::loadAudio(std::string fileName)
                 if (offset + i >= sf_info.frames) {
                     fftInBuffer[i] = 0;
                 } else {
-                    fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
+                    if (sf_info.channels == 2) {
+                        fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
+                    } else {
+                        fftInBuffer[i] = audio[offset + i] * window;
+                    }
                 }
             }
             fftwf_execute(fftwPlan);
@@ -162,7 +166,11 @@ bool App::loadAudio(std::string fileName)
         }
     }
     for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
-        m_pixels[i] = colorFromNormalized(imageTmp[2 * i + 1], 0, imageTmp[2 * i]);
+        m_pixels[i] = colorFromNormalized(
+            sf_info.channels == 1 ? imageTmp[2 * i] : imageTmp[2 * i + 1],
+            0,
+            imageTmp[2 * i]
+        );
     }
 
     fftwf_free(fftOutBuffer);
