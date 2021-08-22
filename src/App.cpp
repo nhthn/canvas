@@ -95,7 +95,7 @@ bool App::loadAudio(std::string fileName)
 
     int frames = sf_info.frames;
     float* audio = new float[sf_info.frames * sf_info.channels];
-    sf_read_float(soundFile, audio, sf_info.frames);
+    sf_readf_float(soundFile, audio, sf_info.frames);
     sf_close(soundFile);
 
     int fftBufferSize = 4096;
@@ -105,62 +105,71 @@ bool App::loadAudio(std::string fileName)
         fftwf_malloc(sizeof(fftwf_complex) * spectrumSize)
     );
     float* magnitudeSpectrum = new float[spectrumSize];
-    float* imageTmp = new float[k_imageHeight * k_imageWidth];
+    float* imageTmp = new float[k_imageHeight * k_imageWidth * 2];
 
     auto fftwPlan = fftwf_plan_dft_r2c_1d(
         fftBufferSize, fftInBuffer, fftOutBuffer, FFTW_MEASURE
     );
 
-    for (int x = 0; x < k_imageWidth; x++) {
-        int offset = x * static_cast<float>(sf_info.frames) / k_imageWidth;
-        for (int i = 0; i < fftBufferSize; i++) {
-            float window = 0.5 - 0.5 * std::cos(i * 2 * 3.141592653589 / fftBufferSize);
-            if (offset + i >= sf_info.frames) {
-                fftInBuffer[i] = 0;
-            } else {
-                fftInBuffer[i] = audio[(offset + i) * 2] * window;
+    for (int channel = 0; channel < 2; channel++) {
+        for (int x = 0; x < k_imageWidth; x++) {
+            int offset = x * static_cast<float>(sf_info.frames) / k_imageWidth;
+            bool hasNonzero = false;
+            for (int i = 0; i < fftBufferSize; i++) {
+                float window = 0.5 - 0.5 * std::cos(i * 2 * 3.141592653589 / fftBufferSize);
+                if (offset + i >= sf_info.frames) {
+                    fftInBuffer[i] = 0;
+                } else {
+                    fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
+                    if (fftInBuffer[i] != 0) {
+                        hasNonzero = true;
+                    }
+                }
             }
+            if (!hasNonzero) {
+                std::cout << "All zero frame." << std::endl;
+            }
+            fftwf_execute(fftwPlan);
+
+            float binToFreq = (sf_info.samplerate * 0.5f) / spectrumSize;
+            float freqToBin = 1 / binToFreq;
+            for (int y = 0; y < k_imageHeight; y++) {
+                float minFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y - 1) / 24.f);
+                float midFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y) / 24.f);
+                float maxFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y + 1) / 24.f);
+                int minBin = clamp<int>(static_cast<int>(freqToBin * minFreq), 0, spectrumSize - 1);
+                int midBin = clamp<int>(static_cast<int>(freqToBin * midFreq), 0, spectrumSize - 1);
+                int maxBin = clamp<int>(static_cast<int>(freqToBin * maxFreq), 0, spectrumSize - 1);
+
+                float amplitude = 0;
+                for (int bin = minBin; bin < midBin; bin++) {
+                    float binAmplitude = std::hypot(fftOutBuffer[bin][0], fftOutBuffer[bin][1]);
+                    float multiplier = static_cast<float>(bin - minBin) / (midBin - minBin);
+                    amplitude += binAmplitude * multiplier;
+                }
+                for (int bin = midBin; bin <= maxBin; bin++) {
+                    float binAmplitude = std::hypot(fftOutBuffer[bin][0], fftOutBuffer[bin][1]);
+                    float multiplier = 1 - static_cast<float>(bin - midBin) / (maxBin - midBin);
+                    amplitude += binAmplitude * multiplier;
+                }
+                imageTmp[(y * k_imageWidth + x) * 2 + channel] = amplitude;
+            };
         }
-        fftwf_execute(fftwPlan);
-
-        float binToFreq = (sf_info.samplerate * 0.5f) / spectrumSize;
-        float freqToBin = 1 / binToFreq;
-        for (int y = 0; y < k_imageHeight; y++) {
-            float minFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y - 1) / 24.f);
-            float midFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y) / 24.f);
-            float maxFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y + 1) / 24.f);
-            int minBin = clamp<int>(static_cast<int>(freqToBin * minFreq), 0, spectrumSize - 1);
-            int midBin = clamp<int>(static_cast<int>(freqToBin * midFreq), 0, spectrumSize - 1);
-            int maxBin = clamp<int>(static_cast<int>(freqToBin * maxFreq), 0, spectrumSize - 1);
-
-            float amplitude = 0;
-            for (int bin = minBin; bin < midBin; bin++) {
-                float binAmplitude = std::hypot(fftOutBuffer[bin][0], fftOutBuffer[bin][1]);
-                float multiplier = static_cast<float>(bin - minBin) / (midBin - minBin);
-                amplitude += binAmplitude * multiplier;
-            }
-            for (int bin = midBin; bin <= maxBin; bin++) {
-                float binAmplitude = std::hypot(fftOutBuffer[bin][0], fftOutBuffer[bin][1]);
-                float multiplier = 1 - static_cast<float>(bin - midBin) / (maxBin - midBin);
-                amplitude += binAmplitude * multiplier;
-            }
-            imageTmp[y * k_imageWidth + x] = amplitude;
-        };
     }
 
     float overallMaxAmplitude = 0;
-    for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
+    for (int i = 0; i < k_imageHeight * k_imageWidth * 2; i++) {
         if (imageTmp[i] > overallMaxAmplitude) {
             overallMaxAmplitude = imageTmp[i];
         }
     }
     if (overallMaxAmplitude != 0) {
-        for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
+        for (int i = 0; i < k_imageHeight * k_imageWidth * 2; i++) {
             imageTmp[i] /= overallMaxAmplitude;
         }
     }
     for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
-        m_pixels[i] = colorFromNormalized(imageTmp[i], imageTmp[i], imageTmp[i]);
+        m_pixels[i] = colorFromNormalized(imageTmp[2 * i + 1], 0, imageTmp[2 * i]);
     }
 
     fftwf_free(fftOutBuffer);
