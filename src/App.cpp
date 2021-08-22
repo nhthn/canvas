@@ -115,7 +115,7 @@ bool App::loadAudio(std::string fileName)
         int offset = x * static_cast<float>(sf_info.frames) / k_imageWidth;
         for (int i = 0; i < fftBufferSize; i++) {
             float window = 0.5 - 0.5 * std::cos(i * 2 * 3.141592653589 / fftBufferSize);
-            if ((offset + i) * 2 >= sf_info.frames) {
+            if (offset + i >= sf_info.frames) {
                 fftInBuffer[i] = 0;
             } else {
                 fftInBuffer[i] = audio[(offset + i) * 2] * window;
