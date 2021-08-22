@@ -119,10 +119,10 @@ bool App::loadAudio(std::string fileName)
                 if (offset + i >= sf_info.frames) {
                     fftInBuffer[i] = 0;
                 } else {
-                    if (sf_info.channels == 2) {
-                        fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
-                    } else {
+                    if (sf_info.channels == 1) {
                         fftInBuffer[i] = audio[offset + i] * window;
+                    } else {
+                        fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
                     }
                 }
             }
@@ -140,13 +140,21 @@ bool App::loadAudio(std::string fileName)
 
                 float amplitude = 0;
                 for (int bin = minBin; bin < midBin; bin++) {
-                    float binAmplitude = std::hypot(fftOutBuffer[bin][0], fftOutBuffer[bin][1]);
-                    float multiplier = static_cast<float>(bin - minBin) / (midBin - minBin);
+                    float binAmplitude = std::hypot(
+                        fftOutBuffer[bin][0], fftOutBuffer[bin][1]
+                    );
+                    float multiplier = (
+                        static_cast<float>(bin - minBin) / (midBin - minBin)
+                    );
                     amplitude += binAmplitude * multiplier;
                 }
                 for (int bin = midBin; bin <= maxBin; bin++) {
-                    float binAmplitude = std::hypot(fftOutBuffer[bin][0], fftOutBuffer[bin][1]);
-                    float multiplier = 1 - static_cast<float>(bin - midBin) / (maxBin - midBin);
+                    float binAmplitude = std::hypot(
+                        fftOutBuffer[bin][0], fftOutBuffer[bin][1]
+                    );
+                    float multiplier = (
+                        1 - static_cast<float>(bin - midBin) / (maxBin - midBin)
+                    );
                     amplitude += binAmplitude * multiplier;
                 }
                 imageTmp[(y * k_imageWidth + x) * 2 + channel] = amplitude;
@@ -166,11 +174,9 @@ bool App::loadAudio(std::string fileName)
         }
     }
     for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
-        m_pixels[i] = colorFromNormalized(
-            sf_info.channels == 1 ? imageTmp[2 * i] : imageTmp[2 * i + 1],
-            0,
-            imageTmp[2 * i]
-        );
+        float left = imageTmp[2 * i];
+        float right = sf_info.channels == 1 ? imageTmp[2 * i] : imageTmp[2 * i + 1];
+        m_pixels[i] = colorFromNormalized(right, 0, left);
     }
 
     fftwf_free(fftOutBuffer);
