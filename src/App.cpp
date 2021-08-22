@@ -87,8 +87,8 @@ bool App::loadAudio(std::string fileName)
         return false;
     }
 
-    if (sf_info.channels != 2) {
-        displayError("File must have 2 channels");
+    if ((sf_info.channels != 1) && (sf_info.channels != 2)) {
+        displayError("File must have 1 or 2 channels");
         sf_close(soundFile);
         return false;
     }
@@ -114,20 +114,13 @@ bool App::loadAudio(std::string fileName)
     for (int channel = 0; channel < 2; channel++) {
         for (int x = 0; x < k_imageWidth; x++) {
             int offset = x * static_cast<float>(sf_info.frames) / k_imageWidth;
-            bool hasNonzero = false;
             for (int i = 0; i < fftBufferSize; i++) {
                 float window = 0.5 - 0.5 * std::cos(i * 2 * 3.141592653589 / fftBufferSize);
                 if (offset + i >= sf_info.frames) {
                     fftInBuffer[i] = 0;
                 } else {
                     fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
-                    if (fftInBuffer[i] != 0) {
-                        hasNonzero = true;
-                    }
                 }
-            }
-            if (!hasNonzero) {
-                std::cout << "All zero frame." << std::endl;
             }
             fftwf_execute(fftwPlan);
 
