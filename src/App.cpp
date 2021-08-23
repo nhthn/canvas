@@ -76,6 +76,118 @@ void App::displayError(std::string message)
     m_gui->displayError(message);
 }
 
+bool App::loadAudio(std::string fileName)
+{
+    SF_INFO sf_info;
+    sf_info.format = 0;
+    auto soundFile = sf_open(fileName.c_str(), SFM_READ, &sf_info);
+
+    if (soundFile == nullptr) {
+        displayError(std::string("Audio loading failed: ") + sf_strerror(soundFile));
+        return false;
+    }
+
+    if ((sf_info.channels != 1) && (sf_info.channels != 2)) {
+        displayError("File must have 1 or 2 channels");
+        sf_close(soundFile);
+        return false;
+    }
+
+    int frames = sf_info.frames;
+    float* audio = new float[sf_info.frames * sf_info.channels];
+    sf_readf_float(soundFile, audio, sf_info.frames);
+    sf_close(soundFile);
+
+    int fftBufferSize = 4096;
+    int spectrumSize = fftBufferSize / 2 + 1;
+    float* fftInBuffer = new float[fftBufferSize];
+    auto fftOutBuffer = static_cast<fftwf_complex*>(
+        fftwf_malloc(sizeof(fftwf_complex) * spectrumSize)
+    );
+    float* magnitudeSpectrum = new float[spectrumSize];
+    float* imageTmp = new float[k_imageHeight * k_imageWidth * 2];
+
+    auto fftwPlan = fftwf_plan_dft_r2c_1d(
+        fftBufferSize, fftInBuffer, fftOutBuffer, FFTW_MEASURE
+    );
+
+    for (int channel = 0; channel < sf_info.channels; channel++) {
+        for (int x = 0; x < k_imageWidth; x++) {
+            int offset = x * static_cast<float>(sf_info.frames) / k_imageWidth;
+            for (int i = 0; i < fftBufferSize; i++) {
+                float window = 0.5 - 0.5 * std::cos(i * 2 * 3.141592653589 / fftBufferSize);
+                if (offset + i >= sf_info.frames) {
+                    fftInBuffer[i] = 0;
+                } else {
+                    if (sf_info.channels == 1) {
+                        fftInBuffer[i] = audio[offset + i] * window;
+                    } else {
+                        fftInBuffer[i] = audio[(offset + i) * 2 + channel] * window;
+                    }
+                }
+            }
+            fftwf_execute(fftwPlan);
+
+            float binToFreq = (sf_info.samplerate * 0.5f) / spectrumSize;
+            float freqToBin = 1 / binToFreq;
+            for (int y = 0; y < k_imageHeight; y++) {
+                float minFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y - 1) / 24.f);
+                float midFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y) / 24.f);
+                float maxFreq = 27.5 * std::pow(2, (k_imageHeight - 1 - y + 1) / 24.f);
+                int minBin = clamp<int>(static_cast<int>(freqToBin * minFreq), 0, spectrumSize - 1);
+                int midBin = clamp<int>(static_cast<int>(freqToBin * midFreq), 0, spectrumSize - 1);
+                int maxBin = clamp<int>(static_cast<int>(freqToBin * maxFreq), 0, spectrumSize - 1);
+
+                float amplitude = 0;
+                for (int bin = minBin; bin < midBin; bin++) {
+                    float binAmplitude = std::hypot(
+                        fftOutBuffer[bin][0], fftOutBuffer[bin][1]
+                    );
+                    float multiplier = (
+                        static_cast<float>(bin - minBin) / (midBin - minBin)
+                    );
+                    amplitude += binAmplitude * multiplier;
+                }
+                for (int bin = midBin; bin <= maxBin; bin++) {
+                    float binAmplitude = std::hypot(
+                        fftOutBuffer[bin][0], fftOutBuffer[bin][1]
+                    );
+                    float multiplier = (
+                        1 - static_cast<float>(bin - midBin) / (maxBin - midBin)
+                    );
+                    amplitude += binAmplitude * multiplier;
+                }
+                imageTmp[(y * k_imageWidth + x) * 2 + channel] = amplitude;
+            };
+        }
+    }
+
+    float overallMaxAmplitude = 0;
+    for (int i = 0; i < k_imageHeight * k_imageWidth * 2; i++) {
+        if (imageTmp[i] > overallMaxAmplitude) {
+            overallMaxAmplitude = imageTmp[i];
+        }
+    }
+    if (overallMaxAmplitude != 0) {
+        for (int i = 0; i < k_imageHeight * k_imageWidth * 2; i++) {
+            imageTmp[i] /= overallMaxAmplitude;
+        }
+    }
+    for (int i = 0; i < k_imageHeight * k_imageWidth; i++) {
+        float left = imageTmp[2 * i];
+        float right = sf_info.channels == 1 ? imageTmp[2 * i] : imageTmp[2 * i + 1];
+        m_pixels[i] = colorFromNormalized(right, 0, left);
+    }
+
+    fftwf_free(fftOutBuffer);
+    delete[] imageTmp;
+    delete[] magnitudeSpectrum;
+    delete[] fftInBuffer;
+    delete[] audio;
+
+    return true;
+}
+
 bool App::renderAudio(std::string fileName)
 {
     if (m_speedInPixelsPerSecond < 0.01) {

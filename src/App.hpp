@@ -9,6 +9,8 @@
 #define STBI_FAILURE_USERMSG
 #include "stb_image.h"
 
+#include <fftw3.h>
+
 #include "common.hpp"
 #include "draw.hpp"
 #include "filters.hpp"
@@ -53,6 +55,7 @@ public:
     bool renderAudio(std::string fileName);
     bool loadImage(std::string fileName);
     bool saveImage(std::string fileName);
+    bool loadAudio(std::string fileName);
 
     void startPlayback();
     void stopPlayback();
