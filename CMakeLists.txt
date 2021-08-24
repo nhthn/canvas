@@ -4,6 +4,15 @@ project(Canvas)
 
 set(CMAKE_CXX_STANDARD 14)
 
+include_directories(
+    ${SDL2_INCLUDE_DIR}
+    ${SDL2_IMAGE_INCLUDE_DIR}
+    ${SDL2TTF_INCLUDE_DIR}
+)
+
+include_directories(${LIBSNDFILE_INCLUDE_DIR})
+include_directories(${FFTW3_INCLUDE_DIR})
+
 add_subdirectory(third_party/portaudio)
 include_directories(
     third_party/portaudio/include/

@@ -3,7 +3,12 @@
 #include <memory>
 #include <random>
 
+#ifdef _WIN32
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif  // _WIN32
+
 #include <sndfile.h>
 
 #define STBI_FAILURE_USERMSG

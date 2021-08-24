@@ -8,6 +8,19 @@ This software is built on PortAudio, libsndfile, SDL2, FFTW, [stb_image](https:/
 
 ## Building
 
+### Windows
+
+You will need to install CMake and Visual Studio.
+
+Download and unzip the following and place them somwhere safe:
+
+- ASIO SDK
+- FFTW3 source code
+- libsndfile source code
+- Development libraries for SDL2, SDL2_image, and SDL2_ttf
+
+### Linux
+
 Debian/Ubuntu:
 
     sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev portaudio19-dev libsndfile1-dev libfftw3-dev
