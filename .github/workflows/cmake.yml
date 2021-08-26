@@ -98,3 +98,15 @@ jobs:
 
     - name: Build CMake
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Copy DLLs
+      run:
+        RELEASE_DIR=${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/fftw/libfftw3f-3.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/bin/sndfile.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2/SDL2-2.0.16/lib/x64/SDL2.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/SDL2_image-2.0.5/lib/x64/SDL2_image.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/SDL2_image-2.0.5/lib/x64/zlib1.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/SDL2_ttf.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/libfreetype-6.dll $RELEASE_DIR
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/bin/sndfile.dll $RELEASE_DIR
