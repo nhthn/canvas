@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <tuple>
@@ -18,5 +19,11 @@ int getBlue(int color);
 float getBlueNormalized(int color);
 float clamp01(float x);
 uint32_t colorFromNormalized(float red, float green, float blue);
+
+template <class T>
+T clamp(T x, T min, T max)
+{
+    return std::max(std::min(x, max), min);
+}
 
 bool endsWith(std::string const &fullString, std::string const &ending);

@@ -4,17 +4,66 @@ Canvas (working title) is a visual additive synthesizer that is controlled by ed
 
 Canvas currently uses 239 sine waves spaced at quarter tones, and offers rudimentary drawing features and several image-based audio filters such as reverb, chorus, and tremolo. Stereo is supported by using red and blue for the right and left channels, respectively. The sine waves can be morphed into other waveforms using [phase distortion synthesis](https://en.wikipedia.org/wiki/Phase_distortion_synthesis).
 
-This software is built on PortAudio, libsndfile, SDL2, [stb_image](https://github.com/nothings/stb/), and [NanoGUI-SDL](https://github.com/dalerank/nanogui-sdl/).
+This software is built on PortAudio, libsndfile, SDL2, FFTW, [stb_image](https://github.com/nothings/stb/), and [NanoGUI-SDL](https://github.com/dalerank/nanogui-sdl/).
 
 ## Building
 
+### Windows
+
+You will need to install CMake and Visual Studio. The below instructions use VS 2019, but will likely work for older versions with appropriate minor changes. MinGW is not yet supported.
+
+Download and unzip the following and place them somwhere safe:
+
+- ASIO SDK
+- FFTW3
+- libsndfile
+- Development libraries for SDL2, SDL2_image, and SDL2_ttf
+
+The FFTW3 library needs a little preparation by generating a .lib file:
+
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+    cd <path to FFTW3>
+    lib.exe /machine:x64 /def:libfftw3f-3.def
+
+To build, run the following:
+
+    mkdir build
+    cd build
+
+    # For the -G option, use cmake --help and scroll down to the list of
+    # Visual Studio versions. Find the string that matches the one you currently
+    # have installed.
+    cmake .. -G "Visual Studio 16 2019" -A x64 \
+        -DASIOSDK_ROOT_DIR=<path to ASIO SDK> \
+        -DSDL2_LIBRARY=<path to SDL2>/lib/x64/SDL2.lib \
+	-DSDL2_INCLUDE_DIRS=<path to SDL2>/include/
+        -DSDL2_IMAGE_PATH=<path to SDL2_image> \
+        -DSDL2_TTF_PATH=<path to SDL2_ttf> \
+	-DSNDFILE_PATH=<path to libsndfile> \
+	-DFFTW_ROOT=<path to FFTW> \
+
+    cmake --build . --config Release
+
+    # NOTE: The following manual copies will be automated in CMake soon
+    cd Release
+    cp <path to FFTW3>/libfftw3f-3.dll .
+    cp <path to SDL2>/lib/x64/SDL2.dll .
+    cp <path to SDL2_image>/lib/x64/SDL2_image.dll .
+    cp <path to SDL2_image>/lib/x64/zlib1.dll .
+    cp <path to SDL2_ttf>/lib/x64/SDL2_ttf.dll .
+    cp <path to SDL2_ttf>/lib/x64/libfreetype-6.dll .
+    cp <path to libsndfile>/bin/sndfile.dll .
+
+
+### Linux
+
 Debian/Ubuntu:
 
-    sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev portaudio19-dev libsndfile1-dev
+    sudo apt install build-essential cmake libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev portaudio19-dev libsndfile1-dev libfftw3-dev
 
 Arch:
 
-    sudo pacman -S cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile
+    sudo pacman -S cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile fftw
 
 Build on Linux:
 

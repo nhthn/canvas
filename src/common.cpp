@@ -2,7 +2,7 @@
 
 std::string getHomeDirectory() {
 #ifdef _WIN32
-    return string(std::getenv("HOMEDRIVE")) + std::getenv("HOMEPATH");
+    return std::string(std::getenv("HOMEDRIVE")) + std::getenv("HOMEPATH");
 #else
     return getenv("HOME");
 #endif // _WIN32

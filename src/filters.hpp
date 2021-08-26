@@ -1,6 +1,7 @@
 #pragma once
 #include <tuple>
 #include <random>
+#include <algorithm>
 
 #include "common.hpp"
 

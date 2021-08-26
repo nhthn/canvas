@@ -3,11 +3,19 @@
 #include <memory>
 #include <random>
 
+#ifdef _WIN32
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif  // _WIN32
+
 #include <sndfile.h>
 
 #define STBI_FAILURE_USERMSG
 #include "stb_image.h"
+
+#include <fftw3.h>
 
 #include "common.hpp"
 #include "draw.hpp"
@@ -53,6 +61,7 @@ public:
     bool renderAudio(std::string fileName);
     bool loadImage(std::string fileName);
     bool saveImage(std::string fileName);
+    bool loadAudio(std::string fileName);
 
     void startPlayback();
     void stopPlayback();

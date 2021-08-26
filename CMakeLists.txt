@@ -4,6 +4,22 @@ project(Canvas)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(
+    CMAKE_MODULE_PATH
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules
+    ${CMAKE_MODULE_PATH}
+)
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+find_package(SndFile REQUIRED)
+find_package(FFTW REQUIRED)
+
+# Aliases for NanoGUI-SDL's sake.
+set(SDL2TTF_LIBRARY ${SDL2_TTF_LIBRARY})
+set(SDL2TTF_INCLUDE_DIR ${SDL2_TTF_INCLUDE_DIR})
+
 add_subdirectory(third_party/portaudio)
 include_directories(
     third_party/portaudio/include/
@@ -29,11 +45,37 @@ include_directories(third_party/stb)
 file(GLOB canvas_files src/*.cpp)
 add_executable(canvas ${canvas_files} ${nanogui_sdl_files})
 
-target_link_libraries(
-    canvas
-    SDL2
-    SDL2_image
-    SDL2_ttf
-    portaudio_static
-    sndfile
-)
+if(UNIX)
+    target_link_libraries(
+        canvas
+        SDL2
+        SDL2_image
+        SDL2_ttf
+        portaudio_static
+        sndfile
+        fftw3f
+    )
+elseif(WIN32)
+    target_include_directories(
+        canvas
+        PRIVATE
+        ${SDL2_INCLUDE_DIR}
+        ${SDL2_IMAGE_INCLUDE_DIR}
+        ${SDL2_TTF_INCLUDE_DIR}
+    )
+    target_link_libraries(
+        canvas
+        PRIVATE
+        ${SDL2_LIBRARY}
+        ${SDL2_IMAGE_LIBRARY}
+        ${SDL2_TTF_LIBRARY}
+    )
+
+    target_include_directories(canvas PRIVATE ${SNDFILE_INCLUDE_DIR})
+    target_link_libraries(canvas PRIVATE ${SNDFILE_LIBRARY})
+
+    target_include_directories(canvas PRIVATE ${FFTW_INCLUDE_DIRS})
+    target_link_libraries(canvas PRIVATE ${FFTW_LIBRARIES})
+
+    target_link_libraries(canvas PRIVATE portaudio_static) 
+endif()
