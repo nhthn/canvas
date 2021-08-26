@@ -44,6 +44,16 @@ To build, run the following:
 
     cmake --build . --config Release
 
+    # NOTE: The following manual copies will be automated in CMake soon
+    cd Release
+    cp <path to FFTW3>/libfftw3f-3.dll .
+    cp <path to SDL2>/lib/x64/SDL2.dll .
+    cp <path to SDL2_image>/lib/x64/SDL2_image.dll .
+    cp <path to SDL2_image>/lib/x64/zlib1.dll .
+    cp <path to SDL2_ttf>/lib/x64/SDL2_ttf.dll .
+    cp <path to SDL2_ttf>/lib/x64/libfreetype-6.dll .
+    cp <path to libsndfile>/bin/sndfile.dll .
+
 
 ### Linux
 

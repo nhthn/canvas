@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <functional>
+#include <tuple>
 #include "portaudio.h"
 
 using AudioCallback = std::function<
@@ -34,7 +35,7 @@ private:
     const int m_block_size = 256;
 
     void handle_error(PaError error);
-    int find_device();
+    std::tuple<int, int> find_device();
     static int stream_callback(
         const void *inputBuffer,
         void *outputBuffer,
