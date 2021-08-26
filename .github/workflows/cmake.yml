@@ -91,3 +91,17 @@ jobs:
         mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf
         curl -L https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.15-VC.zip -o SDL2_ttf.zip
         7z x SDL2_ttf.zip -y
+
+    - name: Configure CMake
+      run: |
+        cmake \
+          -B ${{github.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -G "Visual Studio 16 2019" -A x64 \
+          -DASIOSDK_ROOT_DIR=${{env.LIBS_DOWNLOAD_PATH}}/asiosdk \
+          -DSDL2_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2/lib/x64/SDL2.lib \
+          -DSDL2_INCLUDE_DIRS=${{env.LIBS_DOWNLOAD_PATH}}/include/
+          -DSDL2_IMAGE_PATH=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image \
+          -DSDL2_TTF_PATH=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image \
+          -DSNDFILE_PATH=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile \
+          -DFFTW_ROOT=${{env.LIBS_DOWNLOAD_PATH}}/fftw
