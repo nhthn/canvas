@@ -39,7 +39,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     env:
       LIBS_DOWNLOAD_PATH: ${{github.workspace}}/../3rd-party
@@ -51,7 +51,14 @@ jobs:
 
     - name: Download ASIO SDK
       run: |
-        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}} && cd ${{env.LIBS_DOWNLOAD_PATH}}
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/asiosdk && cd ${{env.LIBS_DOWNLOAD_PATH}}/asiosdk
         curl -L https://www.steinberg.net/asiosdk -o asiosdk.zip
         7z x asiosdk.zip -y
 
+    - name: Download FFTW and generate necessary .lib file
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/fftw && cd ${{env.LIBS_DOWNLOAD_PATH}}/fftw
+        curl -L https://fftw.org/pub/fftw/fftw-3.3.5-dll64.zip -o fftw.zip
+        7z x fftw.zip -y
+        call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+        lib.exe /machine:x64 /def:libfftw3f-3.def
