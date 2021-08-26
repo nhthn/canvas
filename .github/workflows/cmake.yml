@@ -73,3 +73,21 @@ jobs:
         mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile && cd ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile
         curl -L https://github.com/libsndfile/libsndfile/releases/download/1.0.31/libsndfile-1.0.31-win64.zip -o libsndfile.zip
         7z x libsndfile.zip -y
+
+    - name: Download SDL2
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2 && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2
+        curl -L https://www.libsdl.org/release/SDL2-devel-2.0.16-VC.zip -o SDL2.zip
+        7z x SDL2.zip -y
+
+    - name: Download SDL2_image
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image
+        curl -L https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-VC.zip -o SDL2_image.zip
+        7z x SDL2_image.zip -y
+
+    - name: Download SDL2_ttf
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf
+        curl -L https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.15-VC.zip -o SDL2_ttf.zip
+        7z x SDL2_ttf.zip -y
