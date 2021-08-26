@@ -76,4 +76,6 @@ elseif(WIN32)
 
     target_include_directories(canvas PRIVATE ${FFTW_INCLUDE_DIRS})
     target_link_libraries(canvas PRIVATE ${FFTW_LIBRARIES})
+
+    target_link_libraries(canvas PRIVATE portaudio_static) 
 endif()
