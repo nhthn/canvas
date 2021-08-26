@@ -55,10 +55,15 @@ jobs:
         curl -L https://www.steinberg.net/asiosdk -o asiosdk.zip
         7z x asiosdk.zip -y
 
-    - name: Download FFTW and generate necessary .lib file
+    - name: Download FFTW
       run: |
         mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/fftw && cd ${{env.LIBS_DOWNLOAD_PATH}}/fftw
         curl -L https://fftw.org/pub/fftw/fftw-3.3.5-dll64.zip -o fftw.zip
         7z x fftw.zip -y
+
+    - name: Generate .lib file for FFTW
+      shell: cmd
+      run: |
+        cd ${{env.LIBS_DOWNLOAD_PATH}}/fftw
         call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
         lib.exe /machine:x64 /def:libfftw3f-3.def
