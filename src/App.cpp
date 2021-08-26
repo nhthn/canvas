@@ -651,8 +651,8 @@ void App::sendAmplitudesToAudioThread()
 {
     int position = m_position;
 
-    int amplitudeOffset = 2;
-    int size = amplitudeOffset + 2 * k_imageHeight;
+    constexpr int amplitudeOffset = 2;
+    constexpr int size = amplitudeOffset + 2 * k_imageHeight;
     float data[size];
 
     data[0] = m_pdMode;

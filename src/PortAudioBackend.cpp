@@ -8,19 +8,19 @@ PortAudioBackend::PortAudioBackend(AudioCallback callback)
 void PortAudioBackend::run() {
     handle_error(Pa_Initialize());
 
-    int device = find_device();
+    auto devices = find_device();
 
     PaSampleFormat sample_format = paFloat32 | paNonInterleaved;
 
     PaStreamParameters input_parameters;
-    input_parameters.device = device;
+    input_parameters.device = std::get<0>(devices);
     input_parameters.channelCount = 2;
     input_parameters.sampleFormat = sample_format;
     input_parameters.suggestedLatency = 0.0;
     input_parameters.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters output_parameters;
-    output_parameters.device = device;
+    output_parameters.device = std::get<1>(devices);
     output_parameters.channelCount = 2;
     output_parameters.sampleFormat = sample_format;
     output_parameters.suggestedLatency = 0.0;
@@ -69,7 +69,15 @@ void PortAudioBackend::handle_error(PaError error) {
     exit(1);
 }
 
-int PortAudioBackend::find_device() {
+std::tuple<int, int> PortAudioBackend::find_device() {
+#ifdef _WIN32
+    return std::make_tuple(
+        Pa_GetDefaultInputDevice(),
+        Pa_GetDefaultOutputDevice()
+    );
+#endif
+
+#ifdef __linux__
     PaHostApiIndex host_api_index = Pa_HostApiTypeIdToHostApiIndex(paJACK);
     if (host_api_index < 0) {
         std::cerr << "Couldn't find JACK" << std::endl;
@@ -83,11 +91,12 @@ int PortAudioBackend::find_device() {
         const PaDeviceInfo* info = Pa_GetDeviceInfo(device_index);
         std::string name = info->name;
         if (name == "system") {
-            return device_index;
+            return std::make_tuple(device_index, device_index);
         }
     }
     std::cerr << "Couldn't find device" << std::endl;
     exit(1);
+#endif  // __linux__
 }
 
 int PortAudioBackend::stream_callback(
