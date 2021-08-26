@@ -113,6 +113,6 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: canvas-windows-x64
+        name: canvas-windows-x64.zip
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*
         retention-days: 7
