@@ -67,3 +67,9 @@ jobs:
         cd ${{env.LIBS_DOWNLOAD_PATH}}/fftw
         call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
         lib.exe /machine:x64 /def:libfftw3f-3.def
+
+    - name: Download libsndfile
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile && cd ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile
+        curl -L https://github.com/libsndfile/libsndfile/releases/download/1.0.31/libsndfile-1.0.31-win64.zip -o libsndfile.zip
+        7z x libsndfile.zip -y
