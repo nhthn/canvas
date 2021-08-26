@@ -11,7 +11,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
+  linux:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -21,10 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: reecursive
-
-    - name: Retrieve submodules
-      run: git submodule update --init --recursive
+        submodules: recursive
 
     - name: Update repositories
       run: sudo apt-get update
@@ -40,3 +37,82 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+  windows:
+    runs-on: windows-2019
+
+    env:
+      LIBS_DOWNLOAD_PATH: ${{github.workspace}}/../3rd-party
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Download ASIO SDK
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/asiosdk && cd ${{env.LIBS_DOWNLOAD_PATH}}/asiosdk
+        curl -L https://www.steinberg.net/asiosdk -o asiosdk.zip
+        7z x asiosdk.zip -y
+
+    - name: Download FFTW
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/fftw && cd ${{env.LIBS_DOWNLOAD_PATH}}/fftw
+        curl -L https://fftw.org/pub/fftw/fftw-3.3.5-dll64.zip -o fftw.zip
+        7z x fftw.zip -y
+
+    - name: Generate .lib file for FFTW
+      shell: cmd
+      run: |
+        cd ${{env.LIBS_DOWNLOAD_PATH}}/fftw
+        call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+        lib.exe /machine:x64 /def:libfftw3f-3.def
+
+    - name: Download libsndfile
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile && cd ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile
+        curl -L https://github.com/libsndfile/libsndfile/releases/download/1.0.31/libsndfile-1.0.31-win64.zip -o libsndfile.zip
+        7z x libsndfile.zip -y
+
+    - name: Download SDL2
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2 && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2
+        curl -L https://www.libsdl.org/release/SDL2-devel-2.0.16-VC.zip -o SDL2.zip
+        7z x SDL2.zip -y
+
+    - name: Download SDL2_image
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image
+        curl -L https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-VC.zip -o SDL2_image.zip
+        7z x SDL2_image.zip -y
+
+    - name: Download SDL2_ttf
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf && cd ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf
+        curl -L https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.15-VC.zip -o SDL2_ttf.zip
+        7z x SDL2_ttf.zip -y
+
+    - name: Configure CMake
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64 -DASIOSDK_ROOT_DIR=${{env.LIBS_DOWNLOAD_PATH}}/asiosdk -DSDL2_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2/SDL2-2.0.16/lib/x64/SDL2.lib -DSDL2_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2/SDL2-2.0.16/include/ -DSDL2_IMAGE_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/SDL2_image-2.0.5/lib/x64/SDL2_image.lib -DSDL2_IMAGE_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/SDL2_image-2.0.5/include -DSDL2_TTF_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/include -DSDL2_TTF_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/SDL2_ttf.lib -DSNDFILE_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/lib/sndfile.lib -DSNDFILE_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/include/ -DFFTW_ROOT=${{env.LIBS_DOWNLOAD_PATH}}/fftw
+
+    - name: Build CMake
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+    - name: Copy DLLs
+      run: |
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/fftw/libfftw3f-3.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/bin/sndfile.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2/SDL2-2.0.16/lib/x64/SDL2.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/SDL2_image-2.0.5/lib/x64/SDL2_image.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/SDL2_image-2.0.5/lib/x64/zlib1.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/SDL2_ttf.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/libfreetype-6.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+        cp ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/bin/sndfile.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: canvas-windows-x64.zip
+        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*
+        retention-days: 7
