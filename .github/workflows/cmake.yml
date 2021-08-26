@@ -94,7 +94,7 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64 -DASIOSDK_ROOT_DIR=${{env.LIBS_DOWNLOAD_PATH}}/asiosdk -DSDL2_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2/lib/x64/SDL2.lib -DSDL2_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/include/ -DSDL2_IMAGE_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/lib/x64/SDL2_image.lib -DSDL2_IMAGE_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/include -DSDL2_TTF_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/include -DSDL2_TTF_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/lib/x64/SDL2_ttf.lib -DSNDFILE_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/lib/sndfile.lib -DSNDFILE_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/include/ -DFFTW_ROOT=${{env.LIBS_DOWNLOAD_PATH}}/fftw
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64 -DASIOSDK_ROOT_DIR=${{env.LIBS_DOWNLOAD_PATH}}/asiosdk -DSDL2_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2/lib/x64/SDL2.lib -DSDL2_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2/include/ -DSDL2_IMAGE_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/lib/x64/SDL2_image.lib -DSDL2_IMAGE_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_image/include -DSDL2_TTF_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/include -DSDL2_TTF_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/lib/x64/SDL2_ttf.lib -DSNDFILE_LIBRARY=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/lib/sndfile.lib -DSNDFILE_INCLUDE_DIR=${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/include/ -DFFTW_ROOT=${{env.LIBS_DOWNLOAD_PATH}}/fftw
 
     - name: Build CMake
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
