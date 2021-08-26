@@ -28,6 +28,7 @@ Run:
     # Visual Studio versions. Find the string that matches the one you currently
     # have installed.
     cmake .. -G "Visual Studio 15 2017" -A x64 \
+        -DASIOSDK_ROOT_DIR=<path to ASIO SDL> \
         -DSDL2_LIBRARY=<path to SDL2>/lib/x64/SDL2.lib \
 	-DSDL2_INCLUDE_DIRS=<path to SDL2>/include/
         -DSDL2_IMAGE_PATH=<path to SDL2_image> \

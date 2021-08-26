@@ -16,6 +16,10 @@ find_package(SDL2_ttf REQUIRED)
 find_package(SndFile REQUIRED)
 find_package(FFTW REQUIRED)
 
+# Aliases for NanoGUI-SDL's sake.
+set(SDL2TTF_LIBRARY ${SDL2_TTF_LIBRARY})
+set(SDL2TTF_INCLUDE_DIR ${SDL2_TTF_INCLUDE_DIR})
+
 add_subdirectory(third_party/portaudio)
 include_directories(
     third_party/portaudio/include/
@@ -54,20 +58,22 @@ if(UNIX)
 elseif(WIN32)
     target_include_directories(
         canvas
+        PRIVATE
         ${SDL2_INCLUDE_DIR}
         ${SDL2_IMAGE_INCLUDE_DIR}
         ${SDL2_TTF_INCLUDE_DIR}
     )
     target_link_libraries(
         canvas
+        PRIVATE
         ${SDL2_LIBRARY}
         ${SDL2_IMAGE_LIBRARY}
         ${SDL2_TTF_LIBRARY}
     )
 
-    target_include_directories(canvas ${SNDFILE_INCLUDE_DIR})
-    target_link_libraries(canvas ${SNDFILE_LIBRARY})
+    target_include_directories(canvas PRIVATE ${SNDFILE_INCLUDE_DIR})
+    target_link_libraries(canvas PRIVATE ${SNDFILE_LIBRARY})
 
-    target_include_directories(canvas ${FFTW_INCLUDE_DIR})
-    target_link_libraries(canvas ${FFTW_LIBRARY})
+    target_include_directories(canvas PRIVATE ${FFTW_INCLUDE_DIR})
+    target_link_libraries(canvas PRIVATE ${FFTW_LIBRARY})
 endif()
