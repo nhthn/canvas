@@ -11,7 +11,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
+  linux:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -21,10 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: reecursive
-
-    - name: Retrieve submodules
-      run: git submodule update --init --recursive
+        submodules: recursive
 
     - name: Update repositories
       run: sudo apt-get update
@@ -40,3 +37,21 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+  windows:
+    runs-on: windows-latest
+
+    env:
+      LIBS_DOWNLOAD_PATH: ${{github.workspace}}/../3rd-party
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Download ASIO SDK
+      run: |
+        mkdir -p ${{env.LIBS_DOWNLOAD_PATH}} && cd ${{env.LIBS_DOWNLOAD_PATH}}
+        curl -L https://www.steinberg.net/asiosdk -o asiosdk.zip
+        7z x asiosdk.zip -y
+
