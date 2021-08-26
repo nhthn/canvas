@@ -91,7 +91,7 @@ std::tuple<int, int> PortAudioBackend::find_device() {
         const PaDeviceInfo* info = Pa_GetDeviceInfo(device_index);
         std::string name = info->name;
         if (name == "system") {
-            return std::make_tuple<int, int>(device_index, device_index);
+            return std::make_tuple(device_index, device_index);
         }
     }
     std::cerr << "Couldn't find device" << std::endl;
