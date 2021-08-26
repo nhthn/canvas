@@ -74,6 +74,6 @@ elseif(WIN32)
     target_include_directories(canvas PRIVATE ${SNDFILE_INCLUDE_DIR})
     target_link_libraries(canvas PRIVATE ${SNDFILE_LIBRARY})
 
-    target_include_directories(canvas PRIVATE ${FFTW_INCLUDE_DIR})
-    target_link_libraries(canvas PRIVATE ${FFTW_LIBRARY})
+    target_include_directories(canvas PRIVATE ${FFTW_INCLUDE_DIRS})
+    target_link_libraries(canvas PRIVATE ${FFTW_LIB})
 endif()
