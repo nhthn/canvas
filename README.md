@@ -10,16 +10,22 @@ This software is built on PortAudio, libsndfile, SDL2, FFTW, [stb_image](https:/
 
 ### Windows
 
-You will need to install CMake and Visual Studio. MinGW is not yet supported.
+You will need to install CMake and Visual Studio. The below instructions use VS 2019, but will likely work for older versions with appropriate minor changes. MinGW is not yet supported.
 
 Download and unzip the following and place them somwhere safe:
 
 - ASIO SDK
-- FFTW3 source code
+- FFTW3
 - libsndfile
 - Development libraries for SDL2, SDL2_image, and SDL2_ttf
 
-Run:
+The FFTW3 library needs a little preparation by generating a .lib file:
+
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+    cd <path to FFTW3>
+    lib.exe /machine:x64 /def:libfftw3f-3.def
+
+To build, run the following:
 
     mkdir build
     cd build
@@ -27,8 +33,8 @@ Run:
     # For the -G option, use cmake --help and scroll down to the list of
     # Visual Studio versions. Find the string that matches the one you currently
     # have installed.
-    cmake .. -G "Visual Studio 15 2017" -A x64 \
-        -DASIOSDK_ROOT_DIR=<path to ASIO SDL> \
+    cmake .. -G "Visual Studio 16 2019" -A x64 \
+        -DASIOSDK_ROOT_DIR=<path to ASIO SDK> \
         -DSDL2_LIBRARY=<path to SDL2>/lib/x64/SDL2.lib \
 	-DSDL2_INCLUDE_DIRS=<path to SDL2>/include/
         -DSDL2_IMAGE_PATH=<path to SDL2_image> \
