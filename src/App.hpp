@@ -10,11 +10,6 @@
 #include <SDL2/SDL.h>
 #endif  // _WIN32
 
-#include <sndfile.h>
-
-#define STBI_FAILURE_USERMSG
-#include "stb_image.h"
-
 #include <fftw3.h>
 
 #include "common.hpp"
