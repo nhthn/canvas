@@ -7,3 +7,7 @@
 [submodule "third_party/stb"]
 	path = third_party/stb
 	url = https://github.com/nothings/stb
+[submodule "third_party/tclap"]
+	path = third_party/tclap
+	url = https://git.code.sf.net/p/tclap/code
+	branch = 1.4
