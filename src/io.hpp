@@ -14,8 +14,8 @@ Status renderAudio(
     float sampleRate,
     float overallGain,
     float speedInPixelsPerSecond,
-    float m_pdMode,
-    float m_pdDistort
+    float pdMode,
+    float pdDistort
 );
 Status loadImage(Image image, std::string fileName);
 Status saveImage(Image image, std::string fileName);
