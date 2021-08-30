@@ -13,6 +13,72 @@ bool matchesFilter(const std::string& filterString, const std::string& filterNam
     return startsWith(filterString, filterName + "(") && endsWith(filterString, ")");
 }
 
+std::vector<std::string> getFilterArguments(
+    const std::string& filterString,
+    const std::string& filterName
+)
+{
+    int offset = std::string(filterName).size() + 1;
+    auto arguments = filterString.substr(offset, filterString.size() - 1 - offset);
+    std::vector<std::string> trimmedArguments;
+    for (auto argument : split(arguments, ',')) {
+        trimmedArguments.push_back(trim(argument));
+    }
+    return trimmedArguments;
+}
+
+float parseFloatArgument(const std::string& argument)
+{
+    try {
+        float result = std::stof(argument);
+        return result;
+    } catch (std::invalid_argument e) {
+        std::cerr << "Error: invalid float: '" << argument << "'" << std::endl;
+        exit(1);
+    }
+}
+
+bool parseBoolArgument(const std::string& argument)
+{
+    return argument == "true";
+}
+
+int parseLilypondNoteName(const std::string& noteName)
+{
+    std::vector<char> baseNames = { 'c', 'd', 'e', 'f', 'g', 'a', 'b' };
+    std::vector<int> basePitches = { 0, 2, 4, 5, 7, 9, 11 };
+    if (noteName.size() == 0 || noteName.size() > 2) {
+        std::cerr << "Error: invalid note name: '" << noteName << "'";
+        exit(1);
+    }
+    char baseName = noteName[0];
+    bool baseNameFound;
+    int pitch;
+    for (int i = 0; i < baseNames.size(); i++) {
+        if (baseName == baseNames[i]) {
+            pitch = basePitches[i];
+            baseNameFound = true;
+            break;
+        }
+    }
+    if (!baseNameFound) {
+        std::cerr << "Error: invalid note name: '" << noteName << "'";
+        exit(1);
+    }
+    if (noteName.size() == 2) {
+        char inflection = noteName[1];
+        if (inflection == 's') {
+            pitch += 1;
+        } else if (inflection == 'f') {
+            pitch -= 1;
+        } else {
+            std::cerr << "Error: invalid note name: '" << noteName << "'";
+            exit(1);
+        }
+    }
+    return pitch % 12;
+}
+
 
 int main(int argc, char** argv) {
     bool turboMode;
@@ -159,29 +225,47 @@ int main(int argc, char** argv) {
             if (matchesFilter(filterString, "invert")) {
                 filters::applyInvert(image);
             } else if (matchesFilter(filterString, "reverb")) {
-                int offset = std::string("reverb").size() + 1;
-                auto arguments = filterString.substr(offset, filterString.size() - 1 - offset);
-                std::vector<std::string> trimmedArguments;
-                for (auto argument : split(arguments, ',')) {
-                    trimmedArguments.push_back(trim(argument));
-                }
-                float reverbDecay;
-                try {
-                    reverbDecay = std::stof(trimmedArguments[0]);
-                } catch (std::invalid_argument e) {
-                    std::cerr << "Error: invalid float: '" << trimmedArguments[0] << "'" << std::endl;
+                auto arguments = getFilterArguments(filterString, "reverb");
+                if (arguments.size() != 3) {
+                    std::cerr << "Error: expected 3 arguments to reverb filter" << std::endl;
                     exit(1);
                 }
-                float reverbDamping;
-                try {
-                    reverbDamping = std::stof(trimmedArguments[1]);
-                } catch (std::invalid_argument e) {
-                    std::cerr << "Error: invalid float: '" << trimmedArguments[1] << "'" << std::endl;
-                    exit(1);
-                }
-                bool reverbReverse = trimmedArguments[2] == "true";
-
+                float reverbDecay = parseFloatArgument(arguments[0]);
+                float reverbDamping = parseFloatArgument(arguments[1]);
+                bool reverbReverse = parseBoolArgument(arguments[2]);
                 filters::applyReverb(image, reverbDecay, reverbDamping, reverbReverse);
+            } else if (matchesFilter(filterString, "scale_filter")) {
+                auto arguments = getFilterArguments(filterString, "scale_filter");
+                if (arguments.size() != 2) {
+                    std::cerr << "Error: expected 2 arguments to scale filter" << std::endl;
+                    exit(1);
+                }
+                auto root = parseLilypondNoteName(arguments[0]);
+                auto scaleClassString = arguments[1];
+                std::vector<std::string> scaleClassNames = {
+                    "major",
+                    "minor",
+                    "acoustic",
+                    "harmonic_major",
+                    "harmonic_mainor",
+                    "whole_tone",
+                    "octatonic",
+                    "hexatonic"
+                };
+                int scaleClass;
+                bool scaleClassFound = false;
+                for (int i = 0; i < scaleClassNames.size(); i++) {
+                    if (scaleClassString == scaleClassNames[i]) {
+                        scaleClass = i;
+                        scaleClassFound = true;
+                        break;
+                    }
+                }
+                if (!scaleClassFound) {
+                    std::cerr
+                        << "Error: invalid scale class: " << scaleClassString << std::endl;
+                }
+                filters::applyScaleFilter(image, root, scaleClass);
             }
         }
 
