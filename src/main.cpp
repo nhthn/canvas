@@ -1,8 +1,17 @@
+#include <vector>
+
 #include "tclap/CmdLine.h"
 
 #include "App.hpp"
 #include "common.hpp"
+#include "filters.hpp"
 #include "io.hpp"
+
+
+bool matchesFilter(const std::string& filterString, const std::string& filterName)
+{
+    return startsWith(filterString, filterName + "(") && endsWith(filterString, ")");
+}
 
 
 int main(int argc, char** argv) {
@@ -15,6 +24,8 @@ int main(int argc, char** argv) {
     std::string pdModeString = "pulsar";
     int pdMode = 0;
     float pdDistort = 0;
+    std::vector<std::string> filterStrings;
+
     try {
         TCLAP::CmdLine cmd("Canvas: a visual additive synthesizer", ' ', "0.0.1");
         TCLAP::SwitchArg turboSwitch("t", "turbo", "Run in turbo mode", cmd, false);
@@ -65,6 +76,15 @@ int main(int argc, char** argv) {
         );
         cmd.add(pdDistortArg);
 
+        TCLAP::MultiArg<std::string> filterArg(
+            "f",
+            "filter",
+            "Apply a filter. Example: -f reverb(0.3,0.8,true).",
+            false,
+            "string"
+        );
+        cmd.add(filterArg);
+
         cmd.parse(argc, argv);
 
         turboMode = turboSwitch.getValue();
@@ -74,6 +94,7 @@ int main(int argc, char** argv) {
         speedInPixelsPerSecond = speedArg.getValue();
         pdModeString = pdModeArg.getValue();
         pdDistort = pdDistortArg.getValue();
+        filterStrings = filterArg.getValue();
 
         if (pdModeString == "saw") {
             pdMode = 1;
@@ -131,6 +152,36 @@ int main(int argc, char** argv) {
             if (!success) {
                 std::cerr << message << std::endl;
                 exit(1);
+            }
+        }
+
+        for (auto& filterString : filterStrings) {
+            if (matchesFilter(filterString, "invert")) {
+                filters::applyInvert(image);
+            } else if (matchesFilter(filterString, "reverb")) {
+                int offset = std::string("reverb").size() + 1;
+                auto arguments = filterString.substr(offset, filterString.size() - 1 - offset);
+                std::vector<std::string> trimmedArguments;
+                for (auto argument : split(arguments, ',')) {
+                    trimmedArguments.push_back(trim(argument));
+                }
+                float reverbDecay;
+                try {
+                    reverbDecay = std::stof(trimmedArguments[0]);
+                } catch (std::invalid_argument e) {
+                    std::cerr << "Error: invalid float: '" << trimmedArguments[0] << "'" << std::endl;
+                    exit(1);
+                }
+                float reverbDamping;
+                try {
+                    reverbDamping = std::stof(trimmedArguments[1]);
+                } catch (std::invalid_argument e) {
+                    std::cerr << "Error: invalid float: '" << trimmedArguments[1] << "'" << std::endl;
+                    exit(1);
+                }
+                bool reverbReverse = trimmedArguments[2] == "true";
+
+                filters::applyReverb(image, reverbDecay, reverbDamping, reverbReverse);
             }
         }
 

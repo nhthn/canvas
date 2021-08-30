@@ -1,8 +1,10 @@
 #pragma once
 #include <algorithm>
 #include <cstdlib>
+#include <sstream>
 #include <string>
 #include <tuple>
+#include <vector>
 
 using Image = std::tuple<uint32_t*, int, int>;
 
@@ -27,3 +29,6 @@ T clamp(T x, T min, T max)
 }
 
 bool endsWith(std::string const &fullString, std::string const &ending);
+bool startsWith(std::string const &fullString, std::string const &beginning);
+std::vector<std::string> split(std::string text, char delimiter);
+std::string trim(const std::string& str);
