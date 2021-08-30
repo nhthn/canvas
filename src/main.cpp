@@ -12,6 +12,7 @@ int main(int argc, char** argv) {
     float sampleRate = 48000;
     float overallGain = 0.1;
     float speedInPixelsPerSecond = 100;
+    std::string pdModeString = "pulsar";
     int pdMode = 0;
     float pdDistort = 0;
     try {
@@ -43,6 +44,27 @@ int main(int argc, char** argv) {
             "float"
         );
         cmd.add(speedArg);
+
+        TCLAP::ValueArg<std::string> pdModeArg(
+            "m",
+            "pd-mode",
+            "Phase distortion mode. One of pulsar, saw, square, or sine_pwm.",
+            false,
+            "pulsar",
+            "string"
+        );
+        cmd.add(pdModeArg);
+
+        TCLAP::ValueArg<float> pdDistortArg(
+            "d",
+            "pd-distort",
+            "Phase distortion amount from 0 to 1.",
+            false,
+            0,
+            "float"
+        );
+        cmd.add(pdDistortArg);
+
         cmd.parse(argc, argv);
 
         turboMode = turboSwitch.getValue();
@@ -50,6 +72,19 @@ int main(int argc, char** argv) {
         outFile = outFileArg.getValue();
         sampleRate = sampleRateArg.getValue();
         speedInPixelsPerSecond = speedArg.getValue();
+        pdModeString = pdModeArg.getValue();
+        pdDistort = pdDistortArg.getValue();
+
+        if (pdModeString == "saw") {
+            pdMode = 1;
+        } else if (pdModeString == "square") {
+            pdMode = 2;
+        } else if (pdModeString == "sine_pwm") {
+            pdMode = 3;
+        } else {
+            pdMode = 0;
+        }
+
     } catch (TCLAP::ArgException e) {
         std::cerr << "Error: " << e.error() << " for arg " << e.argId() << std::endl;
         exit(1);
