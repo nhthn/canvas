@@ -4,6 +4,7 @@
 [submodule "third_party/nanogui-sdl"]
 	path = third_party/nanogui-sdl
 	url = https://github.com/nhthn/nanogui-sdl
+	branch = develop
 [submodule "third_party/stb"]
 	path = third_party/stb
 	url = https://github.com/nothings/stb
