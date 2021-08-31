@@ -72,3 +72,10 @@ Build on Linux:
     cmake -DCMAKE_BUILD_TYPE=Release ..
 
 The run `./canvas`.
+
+### macOS
+
+    brew install cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile fftw
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..

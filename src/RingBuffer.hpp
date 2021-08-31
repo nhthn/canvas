@@ -7,11 +7,12 @@ template <class T>
 class RingBuffer {
 public:
     RingBuffer(int size);
+    ~RingBuffer();
 
     void write(T* inputBuffer, int count);
     int read();
 
-    std::shared_ptr<T[]> getOutputBuffer() { return m_outputBuffer; };
+    T* getOutputBuffer() { return m_outputBuffer; };
     int getOutputBufferSize() { return m_outputBufferSize; };
     int getWritePos() { return m_writePos; };
 
@@ -22,8 +23,8 @@ private:
     int m_writePos = 0;
 
     std::unique_ptr<PaUtilRingBuffer> m_ringBuffer;
-    std::unique_ptr<T[]> m_ringBufferData;
-    std::shared_ptr<T[]> m_outputBuffer;
+    T* m_ringBufferData;
+    T* m_outputBuffer;
 };
 
 template <class T>
@@ -35,7 +36,7 @@ RingBuffer<T>::RingBuffer(int size)
     , m_outputBuffer(new T[m_outputBufferSize])
 {
     ring_buffer_size_t receivedRingBufferSize = PaUtil_InitializeRingBuffer(
-        m_ringBuffer.get(), sizeof(T), m_ringBufferSize, m_ringBufferData.get()
+        m_ringBuffer.get(), sizeof(T), m_ringBufferSize, m_ringBufferData
     );
     if (receivedRingBufferSize < 0) {
         std::cerr << "RingBuffer initialization failed." << std::endl;
@@ -48,6 +49,13 @@ RingBuffer<T>::RingBuffer(int size)
     for (int i = 0; i < m_outputBufferSize; i++) {
         m_outputBuffer[i] = 0;
     }
+}
+
+template <class T>
+RingBuffer<T>::~RingBuffer()
+{
+    delete[] m_ringBufferData;
+    delete[] m_outputBuffer;
 }
 
 template <class T>
@@ -65,6 +73,6 @@ int RingBuffer<T>::read()
 {
     int availableFrames = PaUtil_GetRingBufferReadAvailable(m_ringBuffer.get());
     int readSamples = std::min(availableFrames, m_outputBufferSize);
-    int count = PaUtil_ReadRingBuffer(m_ringBuffer.get(), m_outputBuffer.get(), readSamples);
+    int count = PaUtil_ReadRingBuffer(m_ringBuffer.get(), m_outputBuffer, readSamples);
     return count;
 }

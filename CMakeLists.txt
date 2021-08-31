@@ -45,7 +45,7 @@ include_directories(third_party/stb)
 file(GLOB canvas_files src/*.cpp)
 add_executable(canvas ${canvas_files} ${nanogui_sdl_files})
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
     target_link_libraries(
         canvas
         SDL2
@@ -55,7 +55,7 @@ if(UNIX)
         sndfile
         fftw3f
     )
-elseif(WIN32)
+else()
     target_include_directories(
         canvas
         PRIVATE

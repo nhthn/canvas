@@ -6,7 +6,9 @@
 #ifdef _WIN32
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
-#else
+#elif __APPLE__
+#include <SDL.h>
+#elif __LINUX__
 #include <SDL2/SDL.h>
 #endif  // _WIN32
 
