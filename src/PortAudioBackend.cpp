@@ -12,13 +12,6 @@ void PortAudioBackend::run() {
 
     PaSampleFormat sample_format = paFloat32 | paNonInterleaved;
 
-    PaStreamParameters input_parameters;
-    input_parameters.device = std::get<0>(devices);
-    input_parameters.channelCount = 2;
-    input_parameters.sampleFormat = sample_format;
-    input_parameters.suggestedLatency = 0.0;
-    input_parameters.hostApiSpecificStreamInfo = nullptr;
-
     PaStreamParameters output_parameters;
     output_parameters.device = std::get<1>(devices);
     output_parameters.channelCount = 2;
@@ -32,7 +25,7 @@ void PortAudioBackend::run() {
     handle_error(
         Pa_OpenStream(
             &m_stream,
-            &input_parameters,
+            nullptr,
             &output_parameters,
             m_sample_rate,
             m_block_size,
@@ -54,34 +47,34 @@ void PortAudioBackend::end() {
 }
 
 void PortAudioBackend::process(
-const float** input_buffer,
+    const float** input_buffer,
     float** output_buffer,
     int frame_count
 ) {
-    m_callback(2, 2, input_buffer, output_buffer, frame_count);
+    m_callback(0, 2, input_buffer, output_buffer, frame_count);
 }
 
 void PortAudioBackend::handle_error(PaError error) {
     if (error == paNoError) {
         return;
     }
-    std::cerr << "PortAudio error, exiting :(" << std::endl;
+    std::cerr << "PortAudio error: " << Pa_GetErrorText(error) << std::endl;
     exit(1);
 }
 
 std::tuple<int, int> PortAudioBackend::find_device() {
-#ifdef _WIN32
+#ifndef __linux__
     return std::make_tuple(
         Pa_GetDefaultInputDevice(),
         Pa_GetDefaultOutputDevice()
     );
-#endif
-
-#ifdef __linux__
+#else
     PaHostApiIndex host_api_index = Pa_HostApiTypeIdToHostApiIndex(paJACK);
     if (host_api_index < 0) {
-        std::cerr << "Couldn't find JACK" << std::endl;
-        exit(1);
+        return std::make_tuple(
+            Pa_GetDefaultInputDevice(),
+            Pa_GetDefaultOutputDevice()
+        );
     }
 
     const PaHostApiInfo* host_api_info = Pa_GetHostApiInfo(host_api_index);

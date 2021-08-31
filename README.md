@@ -75,7 +75,22 @@ The run `./canvas`.
 
 ### macOS
 
-    brew install cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile fftw
+Install some dependencies:
+
+    brew install cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile
+
+I had trouble with the fftw homebrew package (at least on M1), so here's how to build it yourself:
+
+    wget http://www.fftw.org/fftw-3.3.9.tar.gz
+    tar -xzf fftw-3.3.9.tar.gz
+    cd fftw-3.3.9
+    ./configure --enable-float
+    make
+    sudo make install
+
+To build:
+
     mkdir build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
+    make
