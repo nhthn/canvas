@@ -10,8 +10,6 @@ set(
     ${CMAKE_MODULE_PATH}
 )
 
-set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
-
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
