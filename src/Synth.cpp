@@ -149,8 +149,8 @@ void Synth::process(
     float** output_buffer,
     int frame_count
 ) {
-    if (input_channels != 2) {
-        std::cout << "Input channels is not 2. This shouldn't happen!" << std::endl;
+    if (input_channels != 0) {
+        std::cout << "Input channels is not 0. This shouldn't happen!" << std::endl;
         exit(1);
     }
     if (output_channels != 2) {
