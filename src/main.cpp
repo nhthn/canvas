@@ -120,16 +120,8 @@ void applyFilterString(Image image, const std::string& filterString) {
             "octatonic",
             "hexatonic"
         };
-        int scaleClass;
-        bool scaleClassFound = false;
-        for (int i = 0; i < scaleClassNames.size(); i++) {
-            if (scaleClassString == scaleClassNames[i]) {
-                scaleClass = i;
-                scaleClassFound = true;
-                break;
-            }
-        }
-        if (!scaleClassFound) {
+        int scaleClass = getIndexOf(scaleClassNames, scaleClassString);
+        if (scaleClass == -1) {
             std::cerr
                 << "Error: invalid scale class: " << scaleClassString << std::endl;
         }
@@ -164,6 +156,23 @@ void applyFilterString(Image image, const std::string& filterString) {
         filters::applyTremolo(
             image, tremoloRate, tremoloDepth, tremoloShape, tremoloStereo
         );
+    } else if (matchesFilter(filterString, "harmonics")) {
+        auto arguments = getFilterArguments(filterString, "harmonics");
+        if (arguments.size() != 5) {
+            std::cerr << "Error: expected 5 arguments to tremolo filter" << std::endl;
+            exit(1);
+        }
+        float harmonics2 = parseFloatArgument(arguments[0]);
+        float harmonics3 = parseFloatArgument(arguments[1]);
+        float harmonics4 = parseFloatArgument(arguments[2]);
+        float harmonics5 = parseFloatArgument(arguments[3]);
+        float harmonicsSubharmonics = parseBoolArgument(arguments[4]);
+        filters::applyHarmonics(
+            image, harmonics2, harmonics3, harmonics4, harmonics5, harmonicsSubharmonics
+        );
+    } else {
+        std::cerr << "Syntax error in filter string '" << filterString << "'";
+        exit(1);
     }
 }
 
