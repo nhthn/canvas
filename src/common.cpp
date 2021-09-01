@@ -72,3 +72,36 @@ bool endsWith(std::string const &fullString, std::string const &ending) {
         return false;
     }
 }
+
+bool startsWith(std::string const &fullString, std::string const &beginning) {
+    if (fullString.length() >= beginning.length()) {
+        return fullString.compare(0, beginning.length(), beginning) == 0;
+    } else {
+        return false;
+    }
+}
+
+// https://stackoverflow.com/a/65075284/16753552
+std::vector<std::string> split(std::string string, char delimiter)
+{
+    std::string line;
+    std::vector<std::string> result;
+    std::stringstream stringStream(string);
+    while (std::getline(stringStream, line, delimiter)) {
+        result.push_back(line);
+    }
+    return result;
+}
+
+// https://stackoverflow.com/a/1798170/16753552
+std::string trim(const std::string& string)
+{
+    const std::string whitespace = " \t";
+    const auto begin = string.find_first_not_of(whitespace);
+    if (begin == std::string::npos) {
+        return "";
+    }
+    const auto end = string.find_last_not_of(whitespace);
+    const auto range = end - begin + 1;
+    return string.substr(begin, range);
+}
