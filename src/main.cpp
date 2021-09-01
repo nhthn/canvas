@@ -79,6 +79,93 @@ int parseLilypondNoteName(const std::string& noteName)
     return pitch % 12;
 }
 
+int getIndexOf(const std::vector<std::string>& vector, const std::string& string)
+{
+    for (int i = 0; i < vector.size(); i++) {
+        if (string == vector[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void applyFilterString(Image image, const std::string& filterString) {
+    if (matchesFilter(filterString, "invert")) {
+        filters::applyInvert(image);
+    } else if (matchesFilter(filterString, "reverb")) {
+        auto arguments = getFilterArguments(filterString, "reverb");
+        if (arguments.size() != 3) {
+            std::cerr << "Error: expected 3 arguments to reverb filter" << std::endl;
+            exit(1);
+        }
+        float reverbDecay = parseFloatArgument(arguments[0]);
+        float reverbDamping = parseFloatArgument(arguments[1]);
+        bool reverbReverse = parseBoolArgument(arguments[2]);
+        filters::applyReverb(image, reverbDecay, reverbDamping, reverbReverse);
+    } else if (matchesFilter(filterString, "scale_filter")) {
+        auto arguments = getFilterArguments(filterString, "scale_filter");
+        if (arguments.size() != 2) {
+            std::cerr << "Error: expected 2 arguments to scale filter" << std::endl;
+            exit(1);
+        }
+        auto root = parseLilypondNoteName(arguments[0]);
+        auto scaleClassString = arguments[1];
+        std::vector<std::string> scaleClassNames = {
+            "major",
+            "minor",
+            "acoustic",
+            "harmonic_major",
+            "harmonic_mainor",
+            "whole_tone",
+            "octatonic",
+            "hexatonic"
+        };
+        int scaleClass;
+        bool scaleClassFound = false;
+        for (int i = 0; i < scaleClassNames.size(); i++) {
+            if (scaleClassString == scaleClassNames[i]) {
+                scaleClass = i;
+                scaleClassFound = true;
+                break;
+            }
+        }
+        if (!scaleClassFound) {
+            std::cerr
+                << "Error: invalid scale class: " << scaleClassString << std::endl;
+        }
+        filters::applyScaleFilter(image, root, scaleClass);
+    } else if (matchesFilter(filterString, "chorus")) {
+        auto arguments = getFilterArguments(filterString, "chorus");
+        if (arguments.size() != 2) {
+            std::cerr << "Error: expected 2 arguments to chorus filter" << std::endl;
+            exit(1);
+        }
+        float chorusRate = parseFloatArgument(arguments[0]);
+        float chorusDepth = parseFloatArgument(arguments[1]);
+        filters::applyChorus(image, chorusRate, chorusDepth);
+    } else if (matchesFilter(filterString, "tremolo")) {
+        auto arguments = getFilterArguments(filterString, "tremolo");
+        if (arguments.size() != 4) {
+            std::cerr << "Error: expected 4 arguments to tremolo filter" << std::endl;
+            exit(1);
+        }
+        float tremoloRate = parseFloatArgument(arguments[0]);
+        float tremoloDepth = parseFloatArgument(arguments[1]);
+        std::string tremoloShapeString = arguments[2];
+        std::vector<std::string> tremoloShapeNames = {
+            "sine", "triangle", "square", "saw_down", "saw_up"
+        };
+        int tremoloShape = getIndexOf(tremoloShapeNames, tremoloShapeString);
+        if (tremoloShape == -1) {
+            std::cerr << "Error: Invalid tremolo shape: '" << tremoloShapeString << "'";
+            exit(1);
+        }
+        float tremoloStereo = parseFloatArgument(arguments[3]);
+        filters::applyTremolo(
+            image, tremoloRate, tremoloDepth, tremoloShape, tremoloStereo
+        );
+    }
+}
 
 int main(int argc, char** argv) {
     bool turboMode;
@@ -222,51 +309,7 @@ int main(int argc, char** argv) {
         }
 
         for (auto& filterString : filterStrings) {
-            if (matchesFilter(filterString, "invert")) {
-                filters::applyInvert(image);
-            } else if (matchesFilter(filterString, "reverb")) {
-                auto arguments = getFilterArguments(filterString, "reverb");
-                if (arguments.size() != 3) {
-                    std::cerr << "Error: expected 3 arguments to reverb filter" << std::endl;
-                    exit(1);
-                }
-                float reverbDecay = parseFloatArgument(arguments[0]);
-                float reverbDamping = parseFloatArgument(arguments[1]);
-                bool reverbReverse = parseBoolArgument(arguments[2]);
-                filters::applyReverb(image, reverbDecay, reverbDamping, reverbReverse);
-            } else if (matchesFilter(filterString, "scale_filter")) {
-                auto arguments = getFilterArguments(filterString, "scale_filter");
-                if (arguments.size() != 2) {
-                    std::cerr << "Error: expected 2 arguments to scale filter" << std::endl;
-                    exit(1);
-                }
-                auto root = parseLilypondNoteName(arguments[0]);
-                auto scaleClassString = arguments[1];
-                std::vector<std::string> scaleClassNames = {
-                    "major",
-                    "minor",
-                    "acoustic",
-                    "harmonic_major",
-                    "harmonic_mainor",
-                    "whole_tone",
-                    "octatonic",
-                    "hexatonic"
-                };
-                int scaleClass;
-                bool scaleClassFound = false;
-                for (int i = 0; i < scaleClassNames.size(); i++) {
-                    if (scaleClassString == scaleClassNames[i]) {
-                        scaleClass = i;
-                        scaleClassFound = true;
-                        break;
-                    }
-                }
-                if (!scaleClassFound) {
-                    std::cerr
-                        << "Error: invalid scale class: " << scaleClassString << std::endl;
-                }
-                filters::applyScaleFilter(image, root, scaleClass);
-            }
+            applyFilterString(image, filterString);
         }
 
         if (outFileIsImage) {
