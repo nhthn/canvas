@@ -1,3 +1,5 @@
 CMakeCache.txt
 build*
 *.swp
+
+__pycache__
