@@ -81,7 +81,7 @@ Install some dependencies:
 
 I had trouble with the fftw homebrew package (at least on M1), so here's how to build it yourself:
 
-    wget http://www.fftw.org/fftw-3.3.9.tar.gz
+    wget https://www.fftw.org/fftw-3.3.9.tar.gz
     tar -xzf fftw-3.3.9.tar.gz
     cd fftw-3.3.9
     ./configure --enable-float

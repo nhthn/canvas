@@ -1,4 +1,4 @@
-name: CMake
+name: Actions
 
 on:
   push:
@@ -37,6 +37,34 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+
+  macos:
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: brew install cmake sdl2 sdl2_image sdl2_ttf portaudio libsndfile
+
+    - name: Install FFTW
+      run: |
+        wget https://www.fftw.org/fftw-3.3.9.tar.gz
+        tar -xzf fftw-3.3.9.tar.gz
+        cd fftw-3.3.9
+        ./configure --enable-float
+        make
+        sudo make install
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
 
   windows:
     runs-on: windows-2019
