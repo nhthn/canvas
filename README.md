@@ -54,6 +54,7 @@ To build, run the following:
     cp <path to SDL2_ttf>/lib/x64/libfreetype-6.dll .
     cp <path to libsndfile>/bin/sndfile.dll .
 
+Then run `./Release/canvas`.
 
 ### Linux
 
@@ -94,3 +95,9 @@ To build:
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
     make
+
+Then run `./canvas`.
+
+## Running tests
+
+    pytest tests --executable <executable>

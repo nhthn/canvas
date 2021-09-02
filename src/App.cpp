@@ -41,14 +41,12 @@ void App::initAudio()
 
     m_synth = std::make_unique<Synth>(sampleRate);
     m_audioBackend.setCallback([this](
-        int inChannels,
         int outChannels,
-        const float** input_buffer,
         float** output_buffer,
         int numFrames
     ) {
         m_synth->processRealtime(
-            inChannels, outChannels, input_buffer, output_buffer, numFrames, m_ringBuffer
+            outChannels, output_buffer, numFrames, m_ringBuffer
         );
     });
 }

@@ -51,7 +51,7 @@ void PortAudioBackend::process(
     float** output_buffer,
     int frame_count
 ) {
-    m_callback(0, 2, input_buffer, output_buffer, frame_count);
+    m_callback(2, output_buffer, frame_count);
 }
 
 void PortAudioBackend::handle_error(PaError error) {
