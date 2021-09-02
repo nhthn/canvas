@@ -5,14 +5,14 @@
 #include "portaudio.h"
 
 using AudioCallback = std::function<
-    void(int, int, const float**, float**, int)
+    void(int, float**, int)
 >;
 
 
 class PortAudioBackend {
 public:
     PortAudioBackend(
-        AudioCallback callback = [](int, int, const float**, float**, int) { }
+        AudioCallback callback = [](int, float**, int) { }
     );
 
     float getSampleRate() { return m_sample_rate; };

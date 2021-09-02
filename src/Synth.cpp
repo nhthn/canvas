@@ -143,16 +143,10 @@ void Synth::updateFromRingBuffer(std::shared_ptr<RingBuffer<float>> ringBuffer)
 }
 
 void Synth::process(
-    int input_channels,
     int output_channels,
-    const float** input_buffer,
     float** output_buffer,
     int frame_count
 ) {
-    if (input_channels != 0) {
-        std::cout << "Input channels is not 0. This shouldn't happen!" << std::endl;
-        exit(1);
-    }
     if (output_channels != 2) {
         std::cout << "Output channels is not 2. This shouldn't happen!" << std::endl;
         exit(1);
@@ -168,13 +162,11 @@ void Synth::process(
 }
 
 void Synth::processRealtime(
-    int inputChannels,
     int outputChannels,
-    const float** inputBuffer,
     float** outputBuffer,
     int frameCount,
     std::shared_ptr<RingBuffer<float>> ringBuffer
 ) {
     updateFromRingBuffer(ringBuffer);
-    process(inputChannels, outputChannels, inputBuffer, outputBuffer, frameCount);
+    process(outputChannels, outputBuffer, frameCount);
 }

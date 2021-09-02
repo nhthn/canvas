@@ -178,8 +178,6 @@ Status renderAudio(
     int outChannels = 2;
     int blockSize = 64;
 
-    const float* inBuffer[0];
-
     float* leftOutBuffer = new float[blockSize];
     float* rightOutBuffer = new float[blockSize];
     float* outBuffer[2] = { leftOutBuffer, rightOutBuffer };
@@ -196,14 +194,14 @@ Status renderAudio(
             );
         }
         synth.process(
-            inChannels, outChannels, inBuffer, outBuffer, blockSize
+            outChannels, outBuffer, blockSize
         );
         for (int i = 0; i < blockSize; i++) {
             if (sampleOffset + i >= numFrames) {
                 break;
             }
-            audio[(sampleOffset + i) * 2] = inBuffer[0][i];
-            audio[(sampleOffset + i) * 2 + 1] = inBuffer[1][i];
+            audio[(sampleOffset + i) * 2] = outBuffer[0][i];
+            audio[(sampleOffset + i) * 2 + 1] = outBuffer[1][i];
         }
         sampleOffset += blockSize;
     }
