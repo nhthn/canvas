@@ -154,7 +154,7 @@ jobs:
       run: py -3 -m pip install -r ${{github.workspace}}/requirements.txt
 
     - name: Run pytest
-      run: pytest ${{github.workspace}}/tests --executable ${{github.workspace}}/build/${{env.BUILD_TYPE}}/canvas.exe
+      run: py -3 -m pytest ${{github.workspace}}/tests --executable ${{github.workspace}}/build/${{env.BUILD_TYPE}}/canvas.exe
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
