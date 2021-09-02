@@ -174,17 +174,15 @@ Status renderAudio(
     synth.setPDMode(pdMode);
     synth.setPDDistort(pdDistort);
 
-    int inChannels = 2;
+    int inChannels = 0;
     int outChannels = 2;
     int blockSize = 64;
 
-    float* leftInBuffer = new float[blockSize];
-    float* rightInBuffer = new float[blockSize];
-    const float* inBuffer[2] = { leftInBuffer, rightInBuffer };
+    const float* inBuffer[0];
 
     float* leftOutBuffer = new float[blockSize];
     float* rightOutBuffer = new float[blockSize];
-    float* outBuffer[2] = { leftInBuffer, rightInBuffer };
+    float* outBuffer[2] = { leftOutBuffer, rightOutBuffer };
 
     int sampleOffset = 0;
     while (sampleOffset <= numFrames) {
@@ -214,8 +212,6 @@ Status renderAudio(
     sf_close(soundFile);
 
     delete[] audio;
-    delete[] leftInBuffer;
-    delete[] rightInBuffer;
     delete[] leftOutBuffer;
     delete[] rightOutBuffer;
 
