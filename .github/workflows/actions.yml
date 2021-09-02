@@ -71,6 +71,12 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: Install pytest dependencies
+      run: python3 -m pip install -r ${{github.workspace}}/requirements.txt
+
+    - name: Run pytest
+      run: pytest ${{github.workspace}}/tests --executable ${{github.workspace}}/build/canvas
+
 
   windows:
     runs-on: windows-2019
@@ -143,6 +149,12 @@ jobs:
         cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/SDL2_ttf.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
         cp ${{env.LIBS_DOWNLOAD_PATH}}/SDL2_ttf/SDL2_ttf-2.0.15/lib/x64/libfreetype-6.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
         cp ${{env.LIBS_DOWNLOAD_PATH}}/libsndfile/libsndfile-1.0.31-win64/bin/sndfile.dll ${{github.workspace}}/build/${{env.BUILD_TYPE}}
+
+    - name: Install pytest dependencies
+      run: py -3 -m pip install -r ${{github.workspace}}/requirements.txt
+
+    - name: Run pytest
+      run: pytest ${{github.workspace}}/tests --executable ${{github.workspace}}/build/${{env.BUILD_TYPE}}/canvas.exe
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
