@@ -132,6 +132,7 @@ Status loadAudio(Image image, std::string fileName)
 Status renderAudio(
     Image image,
     std::string fileName,
+    std::mt19937& randomEngine,
     float sampleRate,
     float overallGain,
     float speedInPixelsPerSecond,
@@ -170,7 +171,7 @@ Status renderAudio(
     );
     float* audio = new float[numFrames * 2];
 
-    Synth synth(sampleRate);
+    Synth synth(sampleRate, randomEngine);
     synth.setPDMode(pdMode);
     synth.setPDDistort(pdDistort);
 

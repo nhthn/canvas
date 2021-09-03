@@ -11,7 +11,7 @@ void clear(Image image);
 void applyInvert(Image image);
 void applyScaleFilter(Image image, int root, int scaleClass);
 void applyReverb(Image image, float decay, float damping, bool reverse);
-void applyChorus(Image image, float rate, float depth);
+void applyChorus(Image image, std::mt19937& randomEngine, float rate, float depth);
 void applyTremolo(Image image, float rate, float depth, int shape, float stereo);
 void applyHarmonics(
     Image image,

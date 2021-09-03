@@ -39,7 +39,7 @@ void App::initAudio()
 
     float sampleRate = m_audioBackend.getSampleRate();
 
-    m_synth = std::make_unique<Synth>(sampleRate);
+    m_synth = std::make_unique<Synth>(sampleRate, m_randomEngine);
     m_audioBackend.setCallback([this](
         int outChannels,
         float** output_buffer,
@@ -94,7 +94,7 @@ void App::applyReverb(float decay, float damping, bool reverse)
 void App::applyChorus(float rate, float depth)
 {
     Image image(m_pixels, k_imageWidth, k_imageHeight);
-    filters::applyChorus(image, rate, depth);
+    filters::applyChorus(image, m_randomEngine, rate, depth);
 }
 
 
@@ -140,6 +140,7 @@ bool App::renderAudio(std::string fileName) {
     auto status = io::renderAudio(
         image,
         fileName,
+        m_randomEngine,
         m_audioBackend.getSampleRate(),
         m_overallGain,
         m_speedInPixelsPerSecond,

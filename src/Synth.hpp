@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <random>
 #include <vector>
 #include "RingBuffer.hpp"
 
@@ -31,7 +32,7 @@ private:
 
 class Synth {
 public:
-    Synth(float sampleRate);
+    Synth(float sampleRate, std::mt19937& randomEngine);
 
     int getNumOscillators() { return m_oscillators.size(); };
 
