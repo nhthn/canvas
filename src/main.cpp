@@ -89,7 +89,11 @@ int getIndexOf(const std::vector<std::string>& vector, const std::string& string
     return -1;
 }
 
-void applyFilterString(Image image, const std::string& filterString) {
+void applyFilterString(
+    Image image,
+    const std::string& filterString,
+    std::mt19937& randomEngine
+) {
     if (matchesFilter(filterString, "invert")) {
         filters::applyInvert(image);
     } else if (matchesFilter(filterString, "reverb")) {
@@ -134,7 +138,7 @@ void applyFilterString(Image image, const std::string& filterString) {
         }
         float chorusRate = parseFloatArgument(arguments[0]);
         float chorusDepth = parseFloatArgument(arguments[1]);
-        filters::applyChorus(image, chorusRate, chorusDepth);
+        filters::applyChorus(image, randomEngine, chorusRate, chorusDepth);
     } else if (matchesFilter(filterString, "tremolo")) {
         auto arguments = getFilterArguments(filterString, "tremolo");
         if (arguments.size() != 4) {
@@ -187,18 +191,22 @@ int main(int argc, char** argv) {
     int pdMode = 0;
     float pdDistort = 0;
     std::vector<std::string> filterStrings;
+    int seed;
 
     try {
         TCLAP::CmdLine cmd("Canvas: a visual additive synthesizer", ' ', "0.0.1");
         TCLAP::SwitchArg turboSwitch("t", "turbo", "Run in turbo mode", cmd, false);
+
         TCLAP::ValueArg<std::string> inFileArg(
             "i", "infile", "Input file name", false, "", "string"
         );
         cmd.add(inFileArg);
+
         TCLAP::ValueArg<std::string> outFileArg(
             "o", "outfile", "Output file name", false, "", "string"
         );
         cmd.add(outFileArg);
+
         TCLAP::ValueArg<float> sampleRateArg(
             "r",
             "rate",
@@ -208,6 +216,7 @@ int main(int argc, char** argv) {
             "float"
         );
         cmd.add(sampleRateArg);
+
         TCLAP::ValueArg<float> speedArg(
             "s",
             "speed",
@@ -247,6 +256,11 @@ int main(int argc, char** argv) {
         );
         cmd.add(filterArg);
 
+        TCLAP::ValueArg<int> seedArg(
+            "e", "seed", "Random seed", false, 0, "int"
+        );
+        cmd.add(seedArg);
+
         cmd.parse(argc, argv);
 
         turboMode = turboSwitch.getValue();
@@ -257,6 +271,7 @@ int main(int argc, char** argv) {
         pdModeString = pdModeArg.getValue();
         pdDistort = pdDistortArg.getValue();
         filterStrings = filterArg.getValue();
+        seed = seedArg.getValue();
 
         if (pdModeString == "saw") {
             pdMode = 1;
@@ -274,6 +289,8 @@ int main(int argc, char** argv) {
     }
 
     if (turboMode) {
+        std::mt19937 randomEngine(seed);
+
         if (inFile == "") {
             std::cerr << "Error: Input file -i is required in turbo mode" << std::endl;
             exit(1);
@@ -318,7 +335,7 @@ int main(int argc, char** argv) {
         }
 
         for (auto& filterString : filterStrings) {
-            applyFilterString(image, filterString);
+            applyFilterString(image, filterString, randomEngine);
         }
 
         if (outFileIsImage) {
@@ -333,6 +350,7 @@ int main(int argc, char** argv) {
             io::Status status = io::renderAudio(
                 image,
                 outFile,
+                randomEngine,
                 sampleRate,
                 overallGain,
                 speedInPixelsPerSecond,

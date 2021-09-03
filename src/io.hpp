@@ -1,4 +1,5 @@
 #pragma once
+#include <random>
 #include <tuple>
 
 #include "common.hpp"
@@ -11,6 +12,7 @@ Status loadAudio(Image image, std::string fileName);
 Status renderAudio(
     Image image,
     std::string fileName,
+    std::mt19937& randomEngine,
     float sampleRate,
     float overallGain,
     float speedInPixelsPerSecond,

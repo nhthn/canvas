@@ -1,4 +1,5 @@
 #include <cmath>
+#include <random>
 #include "Synth.hpp"
 
 
@@ -59,9 +60,10 @@ float distortPhase(float phase, int mode, float distort)
     return phase;
 }
 
-Oscillator::Oscillator(float sampleRate, float frequency)
+Oscillator::Oscillator(float sampleRate, float frequency, float phase)
     : m_sampleRate(sampleRate)
     , m_frequency(frequency)
+    , m_phase(phase)
 {
 }
 
@@ -91,13 +93,15 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     m_amplitudeRight = m_targetAmplitudeRight;
 }
 
-Synth::Synth(float sampleRate)
+Synth::Synth(float sampleRate, std::mt19937& randomEngine)
     : m_sampleRate(sampleRate)
 {
+    std::uniform_real_distribution<> distribution;
     for (int i = 0; i < 239; i++) {
         float frequency = 55.0 / 2 * std::pow(2, i / 24.0);
+        float phase = distribution(randomEngine);
         m_oscillators.push_back(
-            std::make_unique<Oscillator>(m_sampleRate, frequency)
+            std::make_unique<Oscillator>(m_sampleRate, frequency, phase)
         );
     }
 }

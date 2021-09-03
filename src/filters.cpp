@@ -95,19 +95,17 @@ private:
 };
 
 
-void applyChorus(Image image, float rate, float depth)
+void applyChorus(Image image, std::mt19937& randomEngine, float rate, float depth)
 {
     auto pixels = std::get<0>(image);
     auto width = std::get<1>(image);
     auto height = std::get<2>(image);
 
     for (int row = 0; row < height; row++) {
-        std::random_device randomDevice;
-        std::mt19937 rng(randomDevice());
         int lfoPeriod = 1000.f / (height - 1 - row) / (0.05 + rate);
-        RandomLFO lfoRed(rng, lfoPeriod);
-        RandomLFO lfoGreen(rng, lfoPeriod);
-        RandomLFO lfoBlue(rng, lfoPeriod);
+        RandomLFO lfoRed(randomEngine, lfoPeriod);
+        RandomLFO lfoGreen(randomEngine, lfoPeriod);
+        RandomLFO lfoBlue(randomEngine, lfoPeriod);
         for (int column = 0; column < width; column++) {
             int index = row * width + column;
             int color = pixels[index];

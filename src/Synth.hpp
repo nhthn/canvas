@@ -2,13 +2,14 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <random>
 #include <vector>
 #include "RingBuffer.hpp"
 
 
 class Oscillator {
 public:
-    Oscillator(float sampleRate, float frequency);
+    Oscillator(float sampleRate, float frequency, float phase);
     void processAdd(float* out1, float* out2, int blockSize);
     void setTargetAmplitudeLeft(float amplitude) { m_targetAmplitudeLeft = amplitude; };
     void setTargetAmplitudeRight(float amplitude) { m_targetAmplitudeRight = amplitude; };
@@ -31,7 +32,7 @@ private:
 
 class Synth {
 public:
-    Synth(float sampleRate);
+    Synth(float sampleRate, std::mt19937& randomEngine);
 
     int getNumOscillators() { return m_oscillators.size(); };
 
