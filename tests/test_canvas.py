@@ -52,7 +52,7 @@ def test_image_to_image(canvas, stereo_image):
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
         stereo_image.save(root / "in.png")
-        subprocess.run([canvas, "-t", "-i", root / "in.png", "-o", root / "out.png"])
+        subprocess.run([canvas, "-t", "-i", root / "in.png", "-o", root / "out.png"], check=True)
         out_image = PIL.Image.open(root / "out.png")
         assert out_image.getpixel((0, 0))[:3] == stereo_image.getpixel((0, 0))[:3]
 
@@ -62,7 +62,7 @@ def test_image_to_sound(canvas, stereo_image):
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
         stereo_image.save(root / "in.png")
-        subprocess.run([canvas, "-t", "-i", root / "in.png", "-o", root / "out.wav"])
+        subprocess.run([canvas, "-t", "-i", root / "in.png", "-o", root / "out.wav"], check=True)
         out_sound, __ = soundfile.read(root / "out.wav")
 
         assert out_sound.shape[1] == 2
@@ -78,7 +78,7 @@ def test_mono_sound_to_image(canvas, mono_sound):
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
         soundfile.write(root / "in.wav", mono_sound, 48000)
-        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.png"])
+        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.png"], check=True)
         out_image = np.asarray(PIL.Image.open(root / "out.png"))
 
         assert np.any(out_image[:, :, :3] != 0)
@@ -94,7 +94,7 @@ def test_stereo_sound_to_image(canvas, stereo_sound):
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
         soundfile.write(root / "in.wav", stereo_sound, 48000)
-        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.png"])
+        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.png"], check=True)
         out_image = np.asarray(PIL.Image.open(root / "out.png"))
 
         assert np.any(out_image[:, :, :3] != 0)
@@ -106,7 +106,7 @@ def test_mono_sound_to_sound(canvas, mono_sound):
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
         soundfile.write(root / "in.wav", mono_sound, 48000)
-        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.wav"])
+        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.wav"], check=True)
         out_sound, rate = soundfile.read(root / "out.wav")
         assert out_sound.shape[1] == 2
         assert np.any(out_sound != 0)
@@ -117,7 +117,7 @@ def test_stereo_sound_to_sound(canvas, stereo_sound):
     with tempfile.TemporaryDirectory() as directory:
         root = pathlib.Path(directory)
         soundfile.write(root / "in.wav", stereo_sound, 48000)
-        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.wav"])
+        subprocess.run([canvas, "-t", "-i", root / "in.wav", "-o", root / "out.wav"], check=True)
         out_sound, rate = soundfile.read(root / "out.wav")
         assert out_sound.shape[1] == 2
         assert np.any(out_sound != 0)
