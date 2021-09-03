@@ -8,7 +8,7 @@
 
 class Oscillator {
 public:
-    Oscillator(float sampleRate, float frequency);
+    Oscillator(float sampleRate, float frequency, float phase);
     void processAdd(float* out1, float* out2, int blockSize);
     void setTargetAmplitudeLeft(float amplitude) { m_targetAmplitudeLeft = amplitude; };
     void setTargetAmplitudeRight(float amplitude) { m_targetAmplitudeRight = amplitude; };
