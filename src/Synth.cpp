@@ -95,8 +95,11 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
 
 void Oscillator::processAdd2(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
-        m_phase = std::fmod(m_phase + m_frequency / m_sampleRate, 1.0);
-        float distortedPhase = std::fmod(distortPhase(m_phase, m_pdMode, m_pdDistort), 1.0);
+        m_phase += m_frequency / m_sampleRate;
+        if (m_phase > 1) {
+            m_phase -= 1;
+        }
+        float distortedPhase = distortPhase(m_phase, m_pdMode, m_pdDistort);
         int integerPhase = distortedPhase * 2048;
         float frac = distortedPhase * 2048 - integerPhase;
         int integerPhase2 = (integerPhase + 1) % 2048;
