@@ -96,7 +96,7 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
 void Oscillator::processAdd2(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
         m_phase += m_frequency / m_sampleRate;
-        if (m_phase > 1) {
+        while (m_phase > 1) {
             m_phase -= 1;
         }
         float distortedPhase = distortPhase(m_phase, m_pdMode, m_pdDistort);
