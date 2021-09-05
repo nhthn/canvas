@@ -12,3 +12,6 @@
 	path = third_party/tclap
 	url = https://git.code.sf.net/p/tclap/code
 	branch = 1.4
+[submodule "third_party/benchmark"]
+	path = third_party/benchmark
+	url = https://github.com/google/benchmark
