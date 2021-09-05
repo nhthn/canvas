@@ -109,57 +109,28 @@ Oscillator8::Oscillator8(float sampleRate, Float8 frequencies, Float8 phases)
 
 void Oscillator8::processAdd(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
-        m_phases = m_phases +  m_frequencies / m_sampleRate;
-        float phases[8] = {
-            simdpp::extract<0>(m_phases),
-            simdpp::extract<1>(m_phases),
-            simdpp::extract<2>(m_phases),
-            simdpp::extract<3>(m_phases),
-            simdpp::extract<4>(m_phases),
-            simdpp::extract<5>(m_phases),
-            simdpp::extract<6>(m_phases),
-            simdpp::extract<7>(m_phases)
-        };
-        float amplitudesLeft[8] = {
-            simdpp::extract<0>(m_amplitudesLeft),
-            simdpp::extract<1>(m_amplitudesLeft),
-            simdpp::extract<2>(m_amplitudesLeft),
-            simdpp::extract<3>(m_amplitudesLeft),
-            simdpp::extract<4>(m_amplitudesLeft),
-            simdpp::extract<5>(m_amplitudesLeft),
-            simdpp::extract<6>(m_amplitudesLeft),
-            simdpp::extract<7>(m_amplitudesLeft),
-        };
-        float amplitudesRight[8] = {
-            simdpp::extract<0>(m_amplitudesRight),
-            simdpp::extract<1>(m_amplitudesRight),
-            simdpp::extract<2>(m_amplitudesRight),
-            simdpp::extract<3>(m_amplitudesRight),
-            simdpp::extract<4>(m_amplitudesRight),
-            simdpp::extract<5>(m_amplitudesRight),
-            simdpp::extract<6>(m_amplitudesRight),
-            simdpp::extract<7>(m_amplitudesRight),
-        };
-        float targetAmplitudesLeft[8] = {
-            simdpp::extract<0>(m_targetAmplitudesLeft),
-            simdpp::extract<1>(m_targetAmplitudesLeft),
-            simdpp::extract<2>(m_targetAmplitudesLeft),
-            simdpp::extract<3>(m_targetAmplitudesLeft),
-            simdpp::extract<4>(m_targetAmplitudesLeft),
-            simdpp::extract<5>(m_targetAmplitudesLeft),
-            simdpp::extract<6>(m_targetAmplitudesLeft),
-            simdpp::extract<7>(m_targetAmplitudesLeft),
-        };
-        float targetAmplitudesRight[8] = {
-            simdpp::extract<0>(m_targetAmplitudesRight),
-            simdpp::extract<1>(m_targetAmplitudesRight),
-            simdpp::extract<2>(m_targetAmplitudesRight),
-            simdpp::extract<3>(m_targetAmplitudesRight),
-            simdpp::extract<4>(m_targetAmplitudesRight),
-            simdpp::extract<5>(m_targetAmplitudesRight),
-            simdpp::extract<6>(m_targetAmplitudesRight),
-            simdpp::extract<7>(m_targetAmplitudesRight),
-        };
+        SIMDPP_ALIGN(256) float frequencies[8];
+        simdpp::store(frequencies, m_frequencies);
+        SIMDPP_ALIGN(256) float phases[8];
+        simdpp::store(phases, m_phases);
+
+        for (int i = 0; i < 8; i++) {
+            phases[i] += frequencies[i] / m_sampleRate;
+            if (phases[i] >= 1) {
+                phases[i] -= 1;
+            }
+        }
+
+        m_phases = simdpp::load(phases);
+
+        SIMDPP_ALIGN(256) float amplitudesLeft[8];
+        simdpp::store(amplitudesLeft, m_amplitudesLeft);
+        SIMDPP_ALIGN(256) float amplitudesRight[8];
+        simdpp::store(amplitudesRight, m_amplitudesRight);
+        SIMDPP_ALIGN(256) float targetAmplitudesRight[8];
+        simdpp::store(targetAmplitudesRight, m_targetAmplitudesRight);
+        SIMDPP_ALIGN(256) float targetAmplitudesLeft[8];
+        simdpp::store(targetAmplitudesLeft, m_targetAmplitudesLeft);
         for (int j = 0; j < 8; j++) {
             float phase = phases[j];
             float distortedPhase = distortPhase(phase, m_pdMode, m_pdDistort);
