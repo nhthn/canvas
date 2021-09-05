@@ -111,18 +111,12 @@ void Oscillator8::processAdd(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
         SIMDPP_ALIGN(256) float frequencies[8];
         simdpp::store(frequencies, m_frequencies);
+
+        m_phases = m_phases + m_frequencies / m_sampleRate;
+        m_phases = ((m_phases >= 1) & (m_phases - 1)) + ((m_phases < 1) & m_phases);
+
         SIMDPP_ALIGN(256) float phases[8];
         simdpp::store(phases, m_phases);
-
-        for (int i = 0; i < 8; i++) {
-            phases[i] += frequencies[i] / m_sampleRate;
-            if (phases[i] >= 1) {
-                phases[i] -= 1;
-            }
-        }
-
-        m_phases = simdpp::load(phases);
-
         SIMDPP_ALIGN(256) float amplitudesLeft[8];
         simdpp::store(amplitudesLeft, m_amplitudesLeft);
         SIMDPP_ALIGN(256) float amplitudesRight[8];
