@@ -182,18 +182,17 @@ Status renderAudio(
     float* leftOutBuffer = new float[blockSize];
     float* rightOutBuffer = new float[blockSize];
     float* outBuffer[2] = { leftOutBuffer, rightOutBuffer };
+    float* oscillatorAmplitudes = new float[std::max(synth.getNumOscillators(), height) * 2];
 
     int sampleOffset = 0;
     while (sampleOffset <= numFrames) {
         int position = static_cast<float>(sampleOffset) * width / numFrames;
         for (int i = 0; i < height; i++) {
             int color = pixels[width * (height - 1 - i) + position];
-            synth.setOscillatorAmplitude(
-                i,
-                getBlueNormalized(color) * overallGain,
-                getRedNormalized(color) * overallGain
-            );
+            oscillatorAmplitudes[i * 2] = getBlueNormalized(color) * overallGain;
+            oscillatorAmplitudes[i * 2 + 1] = getRedNormalized(color) * overallGain;
         }
+        synth.setOscillatorAmplitudes(oscillatorAmplitudes);
         synth.process(
             outChannels, outBuffer, blockSize
         );
@@ -213,6 +212,7 @@ Status renderAudio(
     delete[] audio;
     delete[] leftOutBuffer;
     delete[] rightOutBuffer;
+    delete[] oscillatorAmplitudes;
 
     return std::make_tuple(true, "");
 }

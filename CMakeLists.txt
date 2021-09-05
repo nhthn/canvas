@@ -42,9 +42,14 @@ file(GLOB nanogui_sdl_files
     third_party/nanogui-sdl/sdlgui/*.c
 )
 
+# stb_image + stb_image_write
 include_directories(third_party/stb)
 
+# TCLAP
 include_directories(third_party/tclap/include)
+
+# libsimdpp
+include_directories(third_party/libsimdpp)
 
 file(GLOB canvas_files src/*.cpp)
 add_executable(canvas ${canvas_files} ${nanogui_sdl_files})

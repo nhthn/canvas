@@ -15,3 +15,6 @@
 [submodule "third_party/benchmark"]
 	path = third_party/benchmark
 	url = https://github.com/google/benchmark
+[submodule "third_party/libsimdpp"]
+	path = third_party/libsimdpp
+	url = https://github.com/p12tic/libsimdpp
