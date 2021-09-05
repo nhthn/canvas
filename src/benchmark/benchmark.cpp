@@ -21,7 +21,7 @@ static void benchSynthProcess(benchmark::State& state) {
 // Register the function as a benchmark
 BENCHMARK(benchSynthProcess);
 
-static void benchSynthProcess2(benchmark::State& state) {
+static void benchSynthProcessOriginal(benchmark::State& state) {
     std::mt19937 randomEngine(0);
     Synth synth(48000, randomEngine);
 
@@ -35,10 +35,10 @@ static void benchSynthProcess2(benchmark::State& state) {
     float* outputBuffer[2] = { outputBufferLeft, outputBufferRight };
 
     for (auto _ : state) {
-        synth.process2(2, outputBuffer, frameCount);
+        synth.processOriginal(2, outputBuffer, frameCount);
     }
 }
 // Register the function as a benchmark
-BENCHMARK(benchSynthProcess2);
+BENCHMARK(benchSynthProcessOriginal);
 
 BENCHMARK_MAIN();

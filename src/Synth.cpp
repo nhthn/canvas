@@ -67,7 +67,7 @@ Oscillator::Oscillator(float sampleRate, float frequency, float phase)
 {
 }
 
-void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
+void Oscillator::processAddOriginal(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
         m_phase = std::fmod(m_phase + m_frequency / m_sampleRate, 1.0);
         float distortedPhase = std::fmod(distortPhase(m_phase, m_pdMode, m_pdDistort), 1.0);
@@ -93,7 +93,7 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     m_amplitudeRight = m_targetAmplitudeRight;
 }
 
-void Oscillator::processAdd2(float* out1, float* out2, int blockSize) {
+void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     for (int i = 0; i < blockSize; i++) {
         m_phase += m_frequency / m_sampleRate;
         while (m_phase > 1) {
@@ -195,7 +195,7 @@ void Synth::process(
     }
 }
 
-void Synth::process2(
+void Synth::processOriginal(
     int output_channels,
     float** output_buffer,
     int frame_count
@@ -210,7 +210,7 @@ void Synth::process2(
         output_buffer[1][j] = 0;
     }
     for (auto& oscillator : m_oscillators) {
-        oscillator->processAdd2(output_buffer[0], output_buffer[1], frame_count);
+        oscillator->processAddOriginal(output_buffer[0], output_buffer[1], frame_count);
     }
 }
 
