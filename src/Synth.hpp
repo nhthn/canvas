@@ -11,6 +11,7 @@ class Oscillator {
 public:
     Oscillator(float sampleRate, float frequency, float phase);
     void processAdd(float* out1, float* out2, int blockSize);
+    void processAdd2(float* out1, float* out2, int blockSize);
     void setTargetAmplitudeLeft(float amplitude) { m_targetAmplitudeLeft = amplitude; };
     void setTargetAmplitudeRight(float amplitude) { m_targetAmplitudeRight = amplitude; };
 
@@ -43,6 +44,12 @@ public:
     void updateFromRingBuffer(std::shared_ptr<RingBuffer<float>>);
 
     void process(
+        int output_channels,
+        float** output_buffer,
+        int frame_count
+    );
+
+    void process2(
         int output_channels,
         float** output_buffer,
         int frame_count

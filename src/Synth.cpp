@@ -93,6 +93,33 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
     m_amplitudeRight = m_targetAmplitudeRight;
 }
 
+void Oscillator::processAdd2(float* out1, float* out2, int blockSize) {
+    for (int i = 0; i < blockSize; i++) {
+        m_phase = std::fmod(m_phase + m_frequency / m_sampleRate, 1.0);
+        float distortedPhase = std::fmod(distortPhase(m_phase, m_pdMode, m_pdDistort), 1.0);
+        int integerPhase = distortedPhase * 2048;
+        float frac = distortedPhase * 2048 - integerPhase;
+        int integerPhase2 = (integerPhase + 1) % 2048;
+        float amplitudeLeft = (
+            m_amplitudeLeft * (1 - i / static_cast<float>(blockSize))
+            + m_targetAmplitudeLeft * i / static_cast<float>(blockSize)
+        );
+        float amplitudeRight = (
+            m_amplitudeRight * (1 - i / static_cast<float>(blockSize))
+            + m_targetAmplitudeRight * i / static_cast<float>(blockSize)
+        );
+        float outSample = (
+            k_sineTable2048[integerPhase] * (1 - frac)
+            + k_sineTable2048[integerPhase2] * frac
+        );
+        out1[i] += outSample * amplitudeLeft;
+        out2[i] += outSample * amplitudeRight;
+    }
+    m_amplitudeLeft = m_targetAmplitudeLeft;
+    m_amplitudeRight = m_targetAmplitudeRight;
+}
+
+
 Synth::Synth(float sampleRate, std::mt19937& randomEngine)
     : m_sampleRate(sampleRate)
 {
@@ -162,6 +189,25 @@ void Synth::process(
     }
     for (auto& oscillator : m_oscillators) {
         oscillator->processAdd(output_buffer[0], output_buffer[1], frame_count);
+    }
+}
+
+void Synth::process2(
+    int output_channels,
+    float** output_buffer,
+    int frame_count
+) {
+    if (output_channels != 2) {
+        std::cout << "Output channels is not 2. This shouldn't happen!" << std::endl;
+        exit(1);
+    }
+
+    for (int j = 0; j < frame_count; j++) {
+        output_buffer[0][j] = 0;
+        output_buffer[1][j] = 0;
+    }
+    for (auto& oscillator : m_oscillators) {
+        oscillator->processAdd2(output_buffer[0], output_buffer[1], frame_count);
     }
 }
 
