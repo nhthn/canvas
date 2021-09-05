@@ -162,4 +162,4 @@ def test_image_to_sound_regression(canvas, gradient_image, write_regtests):
     expected_sound, expected_rate = soundfile.read(regression_test_file)
 
     assert rate == expected_rate
-    np.testing.assert_allclose(sound, expected_sound)
+    np.testing.assert_allclose(sound, expected_sound, rtol=0, atol=1e-6)
