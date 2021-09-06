@@ -22,6 +22,7 @@ private:
     const float m_sampleRate;
     float m_phase = 0;
     const float m_frequency;
+    const float m_phaseInc;
     float m_amplitudeLeft = 0.0;
     float m_targetAmplitudeLeft = 0.0;
     float m_amplitudeRight = 0.0;

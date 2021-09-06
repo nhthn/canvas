@@ -64,6 +64,7 @@ Oscillator::Oscillator(float sampleRate, float frequency, float phase)
     : m_sampleRate(sampleRate)
     , m_frequency(frequency)
     , m_phase(phase)
+    , m_phaseInc(m_frequency / m_sampleRate)
 {
 }
 
@@ -94,8 +95,9 @@ void Oscillator::processAddOriginal(float* out1, float* out2, int blockSize) {
 }
 
 void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
+    float blockIncrement = 1.0 / blockSize;
     for (int i = 0; i < blockSize; i++) {
-        m_phase += m_frequency / m_sampleRate;
+        m_phase += m_phaseInc;
         while (m_phase > 1) {
             m_phase -= 1;
         }
@@ -104,12 +106,12 @@ void Oscillator::processAdd(float* out1, float* out2, int blockSize) {
         float frac = distortedPhase * 2048 - integerPhase;
         int integerPhase2 = (integerPhase + 1) % 2048;
         float amplitudeLeft = (
-            m_amplitudeLeft * (1 - i / static_cast<float>(blockSize))
-            + m_targetAmplitudeLeft * i / static_cast<float>(blockSize)
+            m_amplitudeLeft * (1 - i * blockIncrement)
+            + m_targetAmplitudeLeft * i * blockIncrement
         );
         float amplitudeRight = (
-            m_amplitudeRight * (1 - i / static_cast<float>(blockSize))
-            + m_targetAmplitudeRight * i / static_cast<float>(blockSize)
+            m_amplitudeRight * (1 - i * blockIncrement)
+            + m_targetAmplitudeRight * i * blockIncrement
         );
         float outSample = (
             k_sineTable2048[integerPhase] * (1 - frac)
