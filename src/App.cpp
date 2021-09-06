@@ -187,14 +187,13 @@ void App::initSDL()
 
 void App::initWindow()
 {
-    int windowFlags = SDL_WINDOW_ALLOW_HIGHDPI;
     m_window = SDL_CreateWindow(
         "Canvas",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         k_windowWidth,
         k_windowHeight,
-        windowFlags
+        0
     );
     if (m_window == nullptr) {
         std::cerr << "Failed to open window: " << SDL_GetError() << std::endl;
