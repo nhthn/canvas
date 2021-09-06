@@ -5,6 +5,12 @@
 #include <random>
 #include <vector>
 
+#if defined(__x86_64__) || defined(_M_X64)
+#define SIMDPP_ARCH_SSE3
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#define SIMDPP_ARCH_ARM_NEON_FLT_SP
+#endif
+
 #include "simdpp/simd.h"
 
 #include "RingBuffer.hpp"
