@@ -34,6 +34,7 @@ private:
     const float m_sampleRate;
     Float8 m_phases;
     const Float8 m_frequencies;
+    Float8 m_phaseInc;
     Float8 m_amplitudesLeft;
     Float8 m_targetAmplitudesLeft;
     Float8 m_amplitudesRight;

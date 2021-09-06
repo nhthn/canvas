@@ -100,6 +100,7 @@ Oscillator8::Oscillator8(float sampleRate, Float8 frequencies, Float8 phases)
     : m_sampleRate(sampleRate)
     , m_frequencies(frequencies)
     , m_phases(phases)
+    , m_phaseInc(m_frequencies / m_sampleRate)
     , m_amplitudesLeft(simdpp::make_float<simdpp::float32<8>>(0, 0, 0, 0, 0, 0, 0, 0))
     , m_amplitudesRight(simdpp::make_float<simdpp::float32<8>>(0, 0, 0, 0, 0, 0, 0, 0))
     , m_targetAmplitudesLeft(simdpp::make_float<simdpp::float32<8>>(0, 0, 0, 0, 0, 0, 0, 0))
@@ -108,11 +109,12 @@ Oscillator8::Oscillator8(float sampleRate, Float8 frequencies, Float8 phases)
 }
 
 void Oscillator8::processAdd(float* out1, float* out2, int blockSize) {
+    float blockInc = 1.0 / blockSize;
     for (int i = 0; i < blockSize; i++) {
         SIMDPP_ALIGN(256) float frequencies[8];
         simdpp::store(frequencies, m_frequencies);
 
-        m_phases = m_phases + m_frequencies / m_sampleRate;
+        m_phases = m_phases + m_phaseInc;
         m_phases = ((m_phases >= 1) & (m_phases - 1)) + ((m_phases < 1) & m_phases);
 
         SIMDPP_ALIGN(256) float phases[8];
@@ -132,12 +134,12 @@ void Oscillator8::processAdd(float* out1, float* out2, int blockSize) {
             float frac = distortedPhase * 2048 - integerPhase;
             int integerPhase2 = (integerPhase + 1) % 2048;
             float amplitudeLeft = (
-                amplitudesLeft[j] * (1 - i / static_cast<float>(blockSize))
-                + targetAmplitudesLeft[j] * i / static_cast<float>(blockSize)
+                amplitudesLeft[j] * (1 - i * blockInc)
+                + targetAmplitudesLeft[j] * i * blockInc
             );
             float amplitudeRight = (
-                amplitudesRight[j] * (1 - i / static_cast<float>(blockSize))
-                + targetAmplitudesRight[j] * i / static_cast<float>(blockSize)
+                amplitudesRight[j] * (1 - i * blockInc)
+                + targetAmplitudesRight[j] * i * blockInc
             );
             float outSample = (
                 k_sineTable2048[integerPhase] * (1 - frac)
