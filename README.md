@@ -6,6 +6,18 @@ Canvas currently uses 239 sine waves spaced at quarter tones, and offers rudimen
 
 This software is built on PortAudio, libsndfile, SDL2, FFTW, [stb](https://github.com/nothings/stb/), and [NanoGUI-SDL](https://github.com/dalerank/nanogui-sdl/).
 
+## Installation
+
+For Windows, builds are provided on the Release page.
+
+For Linux and macOS, you must build yourself using instructions below. You must also have the Zenity tool installed and in your PATH. Otherwise the "Browse" buttons will not work:
+
+    sudo apt install zenity  # Debian
+    sudo pacman -S zenity  # Arch
+    brew install zenity  # macOS
+
+## Building
+
 ### Windows
 
 You will need to install CMake and Visual Studio. The below instructions use VS 2019, but will likely work for older versions with appropriate minor changes. MinGW is not yet supported.
@@ -34,10 +46,10 @@ To build, run the following:
     cmake .. -G "Visual Studio 16 2019" -A x64 \
         -DASIOSDK_ROOT_DIR=<path to ASIO SDK> \
         -DSDL2_LIBRARY=<path to SDL2>/lib/x64/SDL2.lib \
-	-DSDL2_INCLUDE_DIRS=<path to SDL2>/include/
+        -DSDL2_INCLUDE_DIRS=<path to SDL2>/include/ \
         -DSDL2_IMAGE_PATH=<path to SDL2_image> \
         -DSDL2_TTF_PATH=<path to SDL2_ttf> \
-	-DSNDFILE_PATH=<path to libsndfile> \
+        -DSNDFILE_PATH=<path to libsndfile> \
 	-DFFTW_ROOT=<path to FFTW> \
 
     cmake --build . --config Release
