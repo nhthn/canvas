@@ -156,7 +156,18 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_loadAudioPath->withAlignment(sdlgui::TextBox::Alignment::Left);
     m_loadAudioPath->setEditable(true);
 
-    loadAudioPopup.button("Render", [this, &loadAudioButton] {
+    loadAudioPopup.button("Browse...", [this] {
+        const std::vector<std::pair<std::string, std::string>> fileTypes = {
+            { "wav", "WAV files" }
+        };
+        try {
+            m_loadAudioPath->setValue(sdlgui::file_dialog(fileTypes, false));
+        } catch (std::runtime_error e) {
+            displayError(e.what());
+        }
+    });
+
+    loadAudioPopup.button("Load", [this, &loadAudioButton] {
         bool success = m_app->loadAudio(m_loadAudioPath->value());
         if (success) {
             loadAudioButton.setPushed(false);
@@ -172,6 +183,17 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     );
     m_renderAudioPath->withAlignment(sdlgui::TextBox::Alignment::Left);
     m_renderAudioPath->setEditable(true);
+
+    renderAudioPopup.button("Browse...", [this] {
+        const std::vector<std::pair<std::string, std::string>> fileTypes = {
+            { "wav", "WAV files" }
+        };
+        try {
+            m_renderAudioPath->setValue(sdlgui::file_dialog(fileTypes, true));
+        } catch (std::runtime_error e) {
+            displayError(e.what());
+        }
+    });
 
     renderAudioPopup.button("Render", [this, &renderAudioButton] {
         bool success = m_app->renderAudio(m_renderAudioPath->value());
@@ -190,6 +212,17 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     m_loadImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
     m_loadImagePath->setEditable(true);
 
+    loadImagePopup.button("Browse...", [this] {
+        const std::vector<std::pair<std::string, std::string>> fileTypes = {
+            { "png", "PNG files" }
+        };
+        try {
+            m_loadImagePath->setValue(sdlgui::file_dialog(fileTypes, false));
+        } catch (std::runtime_error e) {
+            displayError(e.what());
+        }
+    });
+
     loadImagePopup.button("Load", [this, &loadImageButton] {
         bool success = m_app->loadImage(m_loadImagePath->value());
         if (success) {
@@ -206,6 +239,17 @@ GUI::GUI(App* app, SDL_Window* pwindow, int width, int height)
     );
     m_saveImagePath->withAlignment(sdlgui::TextBox::Alignment::Left);
     m_saveImagePath->setEditable(true);
+
+    saveImagePopup.button("Browse...", [this] {
+        const std::vector<std::pair<std::string, std::string>> fileTypes = {
+            { "png", "PNG files" }
+        };
+        try {
+            m_saveImagePath->setValue(sdlgui::file_dialog(fileTypes, true));
+        } catch (std::runtime_error e) {
+            displayError(e.what());
+        }
+    });
 
     saveImagePopup.button("Save", [this, &saveImageButton] {
         bool success = m_app->saveImage(m_saveImagePath->value());
