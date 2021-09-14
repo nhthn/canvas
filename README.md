@@ -10,11 +10,12 @@ This software is built on PortAudio, libsndfile, SDL2, FFTW, [stb](https://githu
 
 For Windows, builds are provided on the Release page.
 
-For Linux and macOS, you must build yourself using instructions below. You must also have the Zenity tool installed and in your PATH. Otherwise the "Browse" buttons will not work:
+For Linux and macOS, you must build yourself using instructions below.
+
+On Linux, you must also have the Zenity tool installed and in your PATH. Otherwise the "Browse" buttons will not work:
 
     sudo apt install zenity  # Debian
     sudo pacman -S zenity  # Arch
-    brew install zenity  # macOS
 
 ## Building
 
