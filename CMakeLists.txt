@@ -40,12 +40,25 @@ file(GLOB nanogui_sdl_files
     third_party/nanogui-sdl/sdlgui/*.c
 )
 
+if(APPLE)
+    set(
+        nanogui_sdl_files
+        ${nanogui_sdl_files}
+        third_party/nanogui-sdl/sdlgui/darwin.mm
+    )
+endif()
+
 include_directories(third_party/stb)
 
 include_directories(third_party/tclap/include)
 
 file(GLOB canvas_files src/*.cpp)
 add_executable(canvas ${canvas_files} ${nanogui_sdl_files})
+
+if(APPLE)
+    find_library(cocoa_library Cocoa)
+    target_link_libraries(canvas PRIVATE ${cocoa_library})
+endif()
 
 if(UNIX AND NOT APPLE)
     target_link_libraries(
