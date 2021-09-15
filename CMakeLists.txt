@@ -38,8 +38,15 @@ include_directories(
 file(GLOB nanogui_sdl_files
     third_party/nanogui-sdl/sdlgui/*.cpp
     third_party/nanogui-sdl/sdlgui/*.c
-    third_party/nanogui-sdl/sdlgui/darwin.mm
 )
+
+if(APPLE)
+    set(
+        nanogui_sdl_files
+        ${nanogui_sdl_files}
+        third_party/nanogui-sdl/sdlgui/darwin.mm
+    )
+endif()
 
 include_directories(third_party/stb)
 
