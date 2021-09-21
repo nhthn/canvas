@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.19)
 
 project(Canvas)
 
+option(CANVAS_BENCHMARK "Create benchmark executable" OFF)
+
 set(CMAKE_CXX_STANDARD 14)
 
 set(
@@ -92,5 +94,17 @@ else()
     target_include_directories(canvas PRIVATE ${FFTW_INCLUDE_DIRS})
     target_link_libraries(canvas PRIVATE ${FFTW_LIBRARIES})
 
-    target_link_libraries(canvas PRIVATE portaudio_static) 
+    target_link_libraries(canvas PRIVATE portaudio_static)
+endif()
+
+if(CANVAS_BENCHMARK)
+    set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+    add_subdirectory(third_party/benchmark)
+    add_executable(
+        canvas_benchmark
+        src/benchmark/benchmark.cpp
+        src/Synth.hpp
+        src/Synth.cpp
+    )
+    target_link_libraries(canvas_benchmark benchmark::benchmark portaudio_static)
 endif()
